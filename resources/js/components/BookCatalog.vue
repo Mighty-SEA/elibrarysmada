@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import BookCard from './BookCard.vue';
-import CategoryButton from './CategoryButton.vue';
+import CategoryFilter from './CategoryFilter.vue';
+import Pagination from './Pagination.vue';
 import { useEventBus } from '@/composables/useEventBus';
 
 interface Book {
@@ -13,73 +14,38 @@ interface Book {
   available: boolean;
 }
 
-// Data buku hardcoded
-const allBooks = ref<Book[]>([
-  {
-    id: 1,
-    title: 'Harry Potter dan Batu Bertuah',
-    author: 'J.K. Rowling',
-    coverImage: 'https://picsum.photos/seed/book1/300/450',
-    category: 'Fiksi',
-    available: true
-  },
-  {
-    id: 2,
-    title: 'Laskar Pelangi',
-    author: 'Andrea Hirata',
-    coverImage: 'https://picsum.photos/seed/book2/300/450',
-    category: 'Novel',
-    available: false
-  },
-  {
-    id: 3,
-    title: 'Bumi Manusia',
-    author: 'Pramoedya Ananta Toer',
-    coverImage: 'https://picsum.photos/seed/book3/300/450',
-    category: 'Sejarah',
-    available: true
-  },
-  {
-    id: 4,
-    title: 'Filosofi Teras',
-    author: 'Henry Manampiring',
-    coverImage: 'https://picsum.photos/seed/book4/300/450',
-    category: 'Filsafat',
-    available: true
-  },
-  {
-    id: 5,
-    title: 'Atomic Habits',
-    author: 'James Clear',
-    coverImage: 'https://picsum.photos/seed/book5/300/450',
-    category: 'Pengembangan Diri',
-    available: false
-  },
-  {
-    id: 6,
-    title: 'Sapiens: Riwayat Singkat Umat Manusia',
-    author: 'Yuval Noah Harari',
-    coverImage: 'https://picsum.photos/seed/book6/300/450',
-    category: 'Sejarah',
-    available: true
-  },
-  {
-    id: 7,
-    title: 'Pulang',
-    author: 'Tere Liye',
-    coverImage: 'https://picsum.photos/seed/book7/300/450',
-    category: 'Novel',
-    available: true
-  },
-  {
-    id: 8,
-    title: 'Laut Bercerita',
-    author: 'Leila S. Chudori',
-    coverImage: 'https://picsum.photos/seed/book8/300/450',
-    category: 'Novel',
-    available: false
+// Fungsi untuk menghasilkan buku dummy
+function generateDummyBooks(count: number): Book[] {
+  const categories = ['Fiksi', 'Novel', 'Sejarah', 'Filsafat', 'Pengembangan Diri', 'Teknologi', 'Bisnis', 'Sains', 'Biografi', 'Pendidikan'];
+  const authors = [
+    'J.K. Rowling', 'Andrea Hirata', 'Pramoedya Ananta Toer', 'Henry Manampiring', 'James Clear', 
+    'Yuval Noah Harari', 'Tere Liye', 'Leila S. Chudori', 'Dee Lestari', 'Eka Kurniawan',
+    'Raditya Dika', 'Fiersa Besari', 'Haidar Musyafa', 'Sapardi Djoko Damono', 'Boy Candra',
+    'Ayu Utami', 'Buya Hamka', 'Ahmad Fuadi', 'Asma Nadia', 'Dewi Lestari'
+  ];
+  
+  const books: Book[] = [];
+  
+  for (let i = 1; i <= count; i++) {
+    const categoryIndex = Math.floor(Math.random() * categories.length);
+    const authorIndex = Math.floor(Math.random() * authors.length);
+    const isAvailable = Math.random() > 0.3; // 70% buku tersedia
+    
+    books.push({
+      id: i,
+      title: `Buku ${i}: ${categories[categoryIndex]} untuk Pemula`,
+      author: authors[authorIndex],
+      coverImage: `https://picsum.photos/seed/book${i}/300/450`,
+      category: categories[categoryIndex],
+      available: isAvailable
+    });
   }
-]);
+  
+  return books;
+}
+
+// Data buku hardcoded
+const allBooks = ref<Book[]>(generateDummyBooks(100));
 
 // Kategori buku
 const categories = ref([
@@ -88,17 +54,27 @@ const categories = ref([
   'Novel',
   'Sejarah',
   'Filsafat',
-  'Pengembangan Diri'
+  'Pengembangan Diri',
+  'Teknologi',
+  'Bisnis',
+  'Sains',
+  'Biografi',
+  'Pendidikan'
 ]);
 
 const selectedCategory = ref('Semua');
 const searchQuery = ref('');
 const eventBus = useEventBus();
 
+// Pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(24); // 4x6 grid pada layar besar
+
 // Mendengarkan event pencarian
 onMounted(() => {
   eventBus.on('search', (query: string) => {
     searchQuery.value = query;
+    currentPage.value = 1; // Reset ke halaman pertama saat pencarian
   });
 });
 
@@ -128,29 +104,44 @@ const filteredBooks = computed(() => {
   return result;
 });
 
+// Buku yang ditampilkan di halaman saat ini
+const paginatedBooks = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return filteredBooks.value.slice(startIndex, endIndex);
+});
+
+// Total halaman
+const totalPages = computed(() => {
+  return Math.ceil(filteredBooks.value.length / itemsPerPage.value);
+});
+
 function handleCategorySelect(category: string) {
   selectedCategory.value = category;
+  currentPage.value = 1; // Reset ke halaman pertama saat ganti kategori
+}
+
+function handlePageChange(page: number) {
+  currentPage.value = page;
+  // Scroll ke atas halaman
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 overflow-x-auto">
-      <div class="flex space-x-2 pb-2">
-        <CategoryButton
-          v-for="category in categories"
-          :key="category"
-          :name="category"
-          :active="selectedCategory === category"
-          @select="handleCategorySelect(category)"
-        />
-      </div>
+    <div class="mb-8 max-w-xs">
+      <CategoryFilter
+        :categories="categories"
+        :selectedCategory="selectedCategory"
+        @select="handleCategorySelect"
+      />
     </div>
     
     <div v-if="filteredBooks.length > 0">
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
         <BookCard
-          v-for="book in filteredBooks"
+          v-for="book in paginatedBooks"
           :key="book.id"
           :id="book.id"
           :title="book.title"
@@ -159,6 +150,18 @@ function handleCategorySelect(category: string) {
           :category="book.category"
           :available="book.available"
         />
+      </div>
+      
+      <!-- Pagination -->
+      <Pagination 
+        v-if="totalPages > 1"
+        :current-page="currentPage" 
+        :total-pages="totalPages"
+        @page-change="handlePageChange"
+      />
+      
+      <div class="text-center text-gray-500 text-sm mt-4">
+        Menampilkan {{ paginatedBooks.length }} dari {{ filteredBooks.length }} buku
       </div>
     </div>
     <div v-else class="text-center py-16">
