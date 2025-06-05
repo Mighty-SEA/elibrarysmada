@@ -4,6 +4,9 @@ import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import AppFooter from '@/components/AppFooter.vue';
 import { ShoppingCart } from 'lucide-vue-next';
+
+// Tambahkan pengecekan route register
+const hasRegisterRoute = typeof route === 'function' && route.has ? route.has('register') : false;
 </script>
 
 <template>
@@ -48,11 +51,12 @@ import { ShoppingCart } from 'lucide-vue-next';
             <template v-else>
               <Link
                 :href="route('login')"
-                class="text-gray-600 hover:text-gray-800 transition-colors"
+                class="inline-block rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 hover:text-blue-700 transition-colors"
               >
                 Masuk
               </Link>
               <Link
+                v-if="hasRegisterRoute"
                 :href="route('register')"
                 class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
