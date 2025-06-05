@@ -18,7 +18,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
+const user = computed(() => auth.value.user);
 
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
@@ -38,13 +39,32 @@ const activeItemStyles = computed(
     () => (url: string) => (isCurrentRoute.value(url) ? 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : ''),
 );
 
-const mainNavItems: NavItem[] = [
+// Menu untuk administrasi
+const adminNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
 ];
+
+// Menu untuk guru dan murid
+const userNavItems: NavItem[] = [
+    {
+        title: 'Keranjang',
+        href: '/cart',
+        icon: ShoppingCart,
+    },
+];
+
+// Menentukan menu yang akan ditampilkan berdasarkan role
+const mainNavItems = computed<NavItem[]>(() => {
+    if (user.value?.role === 'administrasi') {
+        return adminNavItems;
+    } else {
+        return userNavItems;
+    }
+});
 
 const rightNavItems: NavItem[] = [
     {
@@ -58,6 +78,15 @@ const rightNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+// Menentukan route home berdasarkan role
+const homeRoute = computed(() => {
+    if (user.value?.role === 'administrasi') {
+        return route('dashboard');
+    } else {
+        return route('home');
+    }
+});
 </script>
 
 <template>
@@ -108,7 +137,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="route('dashboard')" class="flex items-center gap-x-2">
+                <Link :href="homeRoute" class="flex items-center gap-x-2">
                     <AppLogo />
                 </Link>
 
@@ -139,6 +168,25 @@ const rightNavItems: NavItem[] = [
                         <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer">
                             <Search class="size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
+
+                        <!-- Tombol Keranjang untuk user non-admin -->
+                        <div v-if="user?.role !== 'administrasi'" class="mr-2">
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Button variant="ghost" size="icon" as-child class="group h-9 w-9 cursor-pointer">
+                                            <Link :href="route('cart')">
+                                                <span class="sr-only">Keranjang</span>
+                                                <ShoppingCart class="size-5 opacity-80 group-hover:opacity-100" />
+                                            </Link>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Keranjang</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
 
                         <div class="hidden space-x-1 lg:flex">
                             <template v-for="item in rightNavItems" :key="item.title">

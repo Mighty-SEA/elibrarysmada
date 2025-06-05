@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import AppFooter from '@/components/AppFooter.vue';
+import { ShoppingCart } from 'lucide-vue-next';
 </script>
 
 <template>
@@ -25,11 +26,23 @@ import AppFooter from '@/components/AppFooter.vue';
           
           <div class="flex items-center space-x-4">
             <template v-if="$page.props.auth.user">
+              <!-- Tombol Dashboard hanya untuk admin -->
               <Link
+                v-if="$page.props.auth.user.role === 'administrasi'"
                 :href="route('dashboard')"
                 class="inline-block rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
               >
                 Dashboard
+              </Link>
+              
+              <!-- Tombol Keranjang untuk murid dan guru -->
+              <Link
+                v-else
+                :href="route('cart')"
+                class="inline-flex items-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+              >
+                <ShoppingCart class="h-4 w-4" />
+                Keranjang
               </Link>
             </template>
             <template v-else>

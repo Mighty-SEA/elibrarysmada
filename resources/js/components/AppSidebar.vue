@@ -4,17 +4,40 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, ShoppingCart } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+// Mendapatkan data user dari Inertia
+const user = computed(() => usePage().props.auth.user);
+
+// Menu untuk administrasi
+const adminNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
 ];
+
+// Menu untuk guru dan murid
+const userNavItems: NavItem[] = [
+    {
+        title: 'Keranjang',
+        href: '/cart',
+        icon: ShoppingCart,
+    },
+];
+
+// Menentukan menu yang akan ditampilkan berdasarkan role
+const mainNavItems = computed<NavItem[]>(() => {
+    if (user.value?.role === 'administrasi') {
+        return adminNavItems;
+    } else {
+        return userNavItems;
+    }
+});
 
 const footerNavItems: NavItem[] = [
     {
@@ -28,6 +51,15 @@ const footerNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+// Menentukan route home berdasarkan role
+const homeRoute = computed(() => {
+    if (user.value?.role === 'administrasi') {
+        return route('dashboard');
+    } else {
+        return route('home');
+    }
+});
 </script>
 
 <template>
@@ -36,7 +68,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
+                        <Link :href="homeRoute">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
