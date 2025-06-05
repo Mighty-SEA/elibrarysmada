@@ -16,13 +16,18 @@ const user = computed(() => usePage().props.auth.user);
 const adminNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: '/admin/dashboard',
         icon: LayoutGrid,
     },
     {
         title: 'Manajemen User',
-        href: '/user-management',
+        href: '/admin/user-management',
         icon: Users,
+    },
+    {
+        title: 'Manajemen Buku',
+        href: '/admin/books',
+        icon: BookOpen,
     },
 ];
 
