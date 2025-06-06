@@ -14,7 +14,13 @@ class BookController extends Controller
     public function index()
     {
         $books = Buku::all()->map(function ($book) {
-            $book->cover_url = $book->cover ? '/storage/' . $book->cover : null;
+            if ($book->cover_type === 'url') {
+                $book->cover_url = $book->cover;
+            } else if ($book->cover) {
+                $book->cover_url = '/storage/' . $book->cover;
+            } else {
+                $book->cover_url = null;
+            }
             return $book;
         });
         
@@ -30,17 +36,6 @@ class BookController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Request all', ['data' => $request->all()]);
-        Log::info('Has file cover', ['has_file' => $request->hasFile('cover')]);
-        
-        if ($request->hasFile('cover')) {
-            Log::info('Cover file info', [
-                'name' => $request->file('cover')->getClientOriginalName(),
-                'size' => $request->file('cover')->getSize(),
-                'mime' => $request->file('cover')->getMimeType(),
-            ]);
-        }
-        
         $validated = $request->validate([
             'judul' => 'required',
             'penulis' => 'nullable',
@@ -51,21 +46,32 @@ class BookController extends Controller
             'lokasi' => 'nullable',
             'deskripsi' => 'nullable',
             'kategori' => 'nullable',
-            'cover' => 'nullable|image|max:2048',
+            'cover_type' => 'required|in:upload,url',
+            'cover' => 'nullable',
         ]);
 
-        if ($request->hasFile('cover')) {
-            // Buat nama file dari judul buku
-            $judul = $validated['judul'];
-            $slug = Str::slug($judul);
-            $extension = $request->file('cover')->getClientOriginalExtension();
-            $filename = $slug . '-' . time() . '.' . $extension;
-            
-            // Simpan file dengan nama yang sudah dibuat
-            $validated['cover'] = $request->file('cover')->storeAs('covers', $filename, 'public');
+        if ($request->cover_type === 'upload') {
+            $request->validate([
+                'cover' => 'nullable|image|max:2048',
+            ]);
+            if ($request->hasFile('cover')) {
+                $judul = $validated['judul'];
+                $slug = \Illuminate\Support\Str::slug($judul);
+                $extension = $request->file('cover')->getClientOriginalExtension();
+                $filename = $slug . '-' . time() . '.' . $extension;
+                $validated['cover'] = $request->file('cover')->storeAs('covers', $filename, 'public');
+            } else {
+                $validated['cover'] = null;
+            }
+        } else if ($request->cover_type === 'url') {
+            $request->validate([
+                'cover' => 'required|url',
+            ]);
+            $validated['cover'] = $request->cover;
         }
-
-        Buku::create($validated);
+        $validated['cover_type'] = $request->cover_type;
+        
+        \App\Models\Buku::create($validated);
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan.');
     }
 
@@ -89,17 +95,6 @@ class BookController extends Controller
 
     public function update(Request $request, Buku $book)
     {
-        Log::info('Update request all', ['data' => $request->all()]);
-        Log::info('Has file cover', ['has_file' => $request->hasFile('cover')]);
-        
-        if ($request->hasFile('cover')) {
-            Log::info('Cover file info', [
-                'name' => $request->file('cover')->getClientOriginalName(),
-                'size' => $request->file('cover')->getSize(),
-                'mime' => $request->file('cover')->getMimeType(),
-            ]);
-        }
-        
         $validated = $request->validate([
             'judul' => 'required',
             'penulis' => 'nullable',
@@ -110,25 +105,36 @@ class BookController extends Controller
             'lokasi' => 'nullable',
             'deskripsi' => 'nullable',
             'kategori' => 'nullable',
-            'cover' => 'nullable|image|max:2048',
+            'cover_type' => 'required|in:upload,url',
+            'cover' => 'nullable',
         ]);
 
-        if ($request->hasFile('cover')) {
-            // Hapus cover lama jika ada
-            if ($book->cover) {
-                Storage::disk('public')->delete($book->cover);
+        if ($request->cover_type === 'upload') {
+            $request->validate([
+                'cover' => 'nullable|image|max:2048',
+            ]);
+            if ($request->hasFile('cover')) {
+                if ($book->cover && $book->cover_type === 'upload') {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($book->cover);
+                }
+                $judul = $validated['judul'];
+                $slug = \Illuminate\Support\Str::slug($judul);
+                $extension = $request->file('cover')->getClientOriginalExtension();
+                $filename = $slug . '-' . time() . '.' . $extension;
+                $validated['cover'] = $request->file('cover')->storeAs('covers', $filename, 'public');
+            } else {
+                $validated['cover'] = $book->cover_type === 'upload' ? $book->cover : null;
             }
-            
-            // Buat nama file dari judul buku
-            $judul = $validated['judul'];
-            $slug = Str::slug($judul);
-            $extension = $request->file('cover')->getClientOriginalExtension();
-            $filename = $slug . '-' . time() . '.' . $extension;
-            
-            // Simpan file dengan nama yang sudah dibuat
-            $validated['cover'] = $request->file('cover')->storeAs('covers', $filename, 'public');
+        } else if ($request->cover_type === 'url') {
+            $request->validate([
+                'cover' => 'required|url',
+            ]);
+            if ($book->cover && $book->cover_type === 'upload') {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($book->cover);
+            }
+            $validated['cover'] = $request->cover;
         }
-
+        $validated['cover_type'] = $request->cover_type;
         $book->update($validated);
         return redirect()->route('books.index')->with('success', 'Buku berhasil diupdate.');
     }

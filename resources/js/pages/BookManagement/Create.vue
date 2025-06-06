@@ -25,7 +25,8 @@ const form = useForm({
   lokasi: '',
   deskripsi: '',
   kategori: '',
-  cover: null as File | null,
+  cover: null as File | string | null,
+  cover_type: 'upload',
 });
 
 const coverPreview = ref<string|null>(null);
@@ -39,6 +40,12 @@ function handleCoverChange(e: Event) {
     form.cover = null;
     coverPreview.value = null;
   }
+}
+
+function handleCoverUrlChange(e: Event) {
+  const url = (e.target as HTMLInputElement).value;
+  form.cover = url;
+  coverPreview.value = url || null;
 }
 
 function submit() {
@@ -108,8 +115,25 @@ function submit() {
             <InputError :message="form.errors.kategori" class="mt-2" />
           </div>
           <div class="grid gap-2">
+            <Label>Jenis Cover</Label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-1">
+                <input type="radio" value="upload" v-model="form.cover_type" /> Upload
+              </label>
+              <label class="flex items-center gap-1">
+                <input type="radio" value="url" v-model="form.cover_type" /> Link URL
+              </label>
+            </div>
+          </div>
+          <div class="grid gap-2" v-if="form.cover_type === 'upload'">
             <Label for="cover">Cover Buku</Label>
             <Input id="cover" type="file" accept="image/*" @change="handleCoverChange" />
+            <InputError :message="form.errors.cover" class="mt-2" />
+            <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
+          </div>
+          <div class="grid gap-2" v-else>
+            <Label for="cover_url">Link Cover Buku</Label>
+            <Input id="cover_url" type="text" placeholder="https://..." @input="handleCoverUrlChange" />
             <InputError :message="form.errors.cover" class="mt-2" />
             <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
           </div>

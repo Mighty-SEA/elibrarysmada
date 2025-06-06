@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->string('kategori')->nullable();
             $table->string('cover')->nullable();
+            $table->enum('cover_type', ['upload', 'url'])->default('upload');
             $table->timestamps();
         });
     }

@@ -22,5 +22,6 @@ class Buku extends Model
         'deskripsi',
         'kategori',
         'cover',
+        'cover_type',
     ];
 } 

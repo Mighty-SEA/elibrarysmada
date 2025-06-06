@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { LoaderCircle, Save } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{ book: any }>();
 
@@ -27,11 +27,22 @@ const form = useForm({
   lokasi: props.book.lokasi ?? '',
   deskripsi: props.book.deskripsi ?? '',
   kategori: props.book.kategori ?? '',
-  cover: null as File | null,
+  cover: props.book.cover_type === 'url' ? props.book.cover : null,
+  cover_type: props.book.cover_type || 'upload',
   _method: 'PUT',
 });
 
-const coverPreview = ref<string|null>(props.book.cover_url || null);
+const coverPreview = ref<string|null>(props.book.cover_type === 'url' ? props.book.cover : (props.book.cover_url || null));
+
+watch(() => form.cover_type, (newType) => {
+  if (newType === 'url') {
+    form.cover = typeof props.book.cover === 'string' ? props.book.cover : '';
+    coverPreview.value = typeof props.book.cover === 'string' ? props.book.cover : null;
+  } else {
+    form.cover = null;
+    coverPreview.value = props.book.cover_url || null;
+  }
+});
 
 function handleCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
@@ -120,8 +131,22 @@ function submit() {
             <InputError :message="form.errors.kategori" class="mt-2" />
           </div>
           <div class="grid gap-2">
+            <Label for="cover_type">Tipe Cover</Label>
+            <select id="cover_type" v-model="form.cover_type">
+              <option value="upload">Upload</option>
+              <option value="url">URL</option>
+            </select>
+            <InputError :message="form.errors.cover_type" class="mt-2" />
+          </div>
+          <div class="grid gap-2" v-if="form.cover_type === 'upload'">
             <Label for="cover">Cover Buku</Label>
             <Input id="cover" type="file" accept="image/*" @change="handleCoverChange" />
+            <InputError :message="form.errors.cover" class="mt-2" />
+            <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
+          </div>
+          <div class="grid gap-2" v-else>
+            <Label for="cover_url">Link Cover Buku</Label>
+            <Input id="cover_url" type="text" v-model="form.cover" />
             <InputError :message="form.errors.cover" class="mt-2" />
             <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
           </div>
