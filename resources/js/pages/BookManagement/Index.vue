@@ -4,12 +4,36 @@
     <div class="flex h-full flex-1 flex-col gap-4 p-4">
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Manajemen Buku</h1>
-        <Link :href="route('books.create')">
-          <Button>
-            <BookPlus class="mr-2 h-4 w-4" />
-            Tambah Buku
-          </Button>
-        </Link>
+        <div class="flex gap-2">
+          <Dialog>
+            <DialogTrigger as-child>
+              <Button type="button">Import</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Import Buku</DialogTitle>
+                <DialogDescription>Upload file Excel (.xlsx/.xls) sesuai template export.</DialogDescription>
+              </DialogHeader>
+              <form :action="route('books.import')" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_token" :value="csrf" />
+                <input type="file" name="file" accept=".xlsx,.xls" required class="mb-4" />
+                <DialogFooter>
+                  <Button type="submit">Upload</Button>
+                  <DialogClose as-child>
+                    <Button type="button" variant="outline">Batal</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Button type="button" @click="exportBooks">Export</Button>
+          <Link :href="route('books.create')">
+            <Button>
+              <BookPlus class="mr-2 h-4 w-4" />
+              Tambah Buku
+            </Button>
+          </Link>
+        </div>
       </div>
       <div class="rounded-md border">
         <Table>
@@ -67,6 +91,14 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Edit, Trash2, BookPlus } from 'lucide-vue-next';
+import Dialog from '@/components/ui/dialog/Dialog.vue';
+import DialogTrigger from '@/components/ui/dialog/DialogTrigger.vue';
+import DialogContent from '@/components/ui/dialog/DialogContent.vue';
+import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
+import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
+import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
+import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
+import DialogClose from '@/components/ui/dialog/DialogClose.vue';
 
 const props = defineProps<{ books: any[] }>();
 
@@ -86,4 +118,14 @@ const deleteBook = (id: number) => {
     router.delete(route('books.destroy', id));
   }
 };
+
+let csrf = '';
+const meta = document.querySelector('meta[name="csrf-token"]');
+if (meta) {
+  csrf = meta.getAttribute('content') || '';
+}
+
+function exportBooks() {
+  window.location.href = route('books.export');
+}
 </script> 

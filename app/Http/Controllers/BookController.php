@@ -8,6 +8,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Redirect;
 
 class BookController extends Controller
 {
@@ -143,5 +145,20 @@ class BookController extends Controller
     {
         $book->delete();
         return redirect()->route('books.index')->with('success', 'Buku berhasil dihapus.');
+    }
+
+    public function export()
+    {
+        $fileName = 'buku_export_' . date('Ymd_His') . '.xlsx';
+        return Excel::download(new \App\Exports\BooksExport, $fileName);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+        Excel::import(new \App\Imports\BooksImport, $request->file('file'));
+        return Redirect::route('books.index')->with('success', 'Import data buku berhasil!');
     }
 } 

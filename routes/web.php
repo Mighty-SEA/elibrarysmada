@@ -30,7 +30,8 @@ Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(fun
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
 });
 
-
+Route::get('/books/export', [\App\Http\Controllers\BookController::class, 'export'])->name('books.export');
+Route::post('/books/import', [\App\Http\Controllers\BookController::class, 'import'])->name('books.import');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
