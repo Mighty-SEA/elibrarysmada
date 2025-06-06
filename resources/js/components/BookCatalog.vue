@@ -5,62 +5,17 @@ import CategoryFilter from './CategoryFilter.vue';
 import Pagination from './Pagination.vue';
 import { useEventBus } from '@/composables/useEventBus';
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  coverImage: string;
-  category: string;
-  available: boolean;
+// Data buku dari prop
+const props = defineProps<{ books: any[] }>();
+const allBooks = ref(Array.isArray(props.books) ? props.books : []);
+
+// Kategori buku dinamis dari data
+const categories = ref(['Semua']);
+if (props.books && props.books.length > 0) {
+  const allCats = props.books.flatMap(b => b.kategori_list || []);
+  const uniqueCats = Array.from(new Set(allCats.map(c => c.trim()))).filter(Boolean);
+  categories.value = ['Semua', ...uniqueCats];
 }
-
-// Fungsi untuk menghasilkan buku dummy
-function generateDummyBooks(count: number): Book[] {
-  const categories = ['Fiksi', 'Novel', 'Sejarah', 'Filsafat', 'Pengembangan Diri', 'Teknologi', 'Bisnis', 'Sains', 'Biografi', 'Pendidikan'];
-  const authors = [
-    'J.K. Rowling', 'Andrea Hirata', 'Pramoedya Ananta Toer', 'Henry Manampiring', 'James Clear', 
-    'Yuval Noah Harari', 'Tere Liye', 'Leila S. Chudori', 'Dee Lestari', 'Eka Kurniawan',
-    'Raditya Dika', 'Fiersa Besari', 'Haidar Musyafa', 'Sapardi Djoko Damono', 'Boy Candra',
-    'Ayu Utami', 'Buya Hamka', 'Ahmad Fuadi', 'Asma Nadia', 'Dewi Lestari'
-  ];
-  
-  const books: Book[] = [];
-  
-  for (let i = 1; i <= count; i++) {
-    const categoryIndex = Math.floor(Math.random() * categories.length);
-    const authorIndex = Math.floor(Math.random() * authors.length);
-    const isAvailable = Math.random() > 0.3; // 70% buku tersedia
-    
-    books.push({
-      id: i,
-      title: `Buku ${i}: ${categories[categoryIndex]} untuk Pemula`,
-      author: authors[authorIndex],
-      coverImage: `https://picsum.photos/seed/book${i}/300/450`,
-      category: categories[categoryIndex],
-      available: isAvailable
-    });
-  }
-  
-  return books;
-}
-
-// Data buku hardcoded
-const allBooks = ref<Book[]>(generateDummyBooks(100));
-
-// Kategori buku
-const categories = ref([
-  'Semua',
-  'Fiksi',
-  'Novel',
-  'Sejarah',
-  'Filsafat',
-  'Pengembangan Diri',
-  'Teknologi',
-  'Bisnis',
-  'Sains',
-  'Biografi',
-  'Pendidikan'
-]);
 
 const selectedCategory = ref('Semua');
 const searchQuery = ref('');
@@ -72,9 +27,9 @@ const itemsPerPage = ref(24); // 4x6 grid pada layar besar
 
 // Mendengarkan event pencarian
 onMounted(() => {
-  eventBus.on('search', (query: string) => {
-    searchQuery.value = query;
-    currentPage.value = 1; // Reset ke halaman pertama saat pencarian
+  eventBus.on('search', (query: any) => {
+    searchQuery.value = typeof query === 'string' ? query : '';
+    currentPage.value = 1;
   });
 });
 
@@ -88,7 +43,7 @@ const filteredBooks = computed(() => {
   
   // Filter berdasarkan kategori
   if (selectedCategory.value !== 'Semua') {
-    result = result.filter(book => book.category === selectedCategory.value);
+    result = result.filter(book => (book.kategori_list && book.kategori_list.includes(selectedCategory.value)) || book.category === selectedCategory.value);
   }
   
   // Filter berdasarkan pencarian
@@ -144,11 +99,11 @@ function handlePageChange(page: number) {
           v-for="book in paginatedBooks"
           :key="book.id"
           :id="book.id"
-          :title="book.title"
-          :author="book.author"
-          :cover-image="book.coverImage"
-          :category="book.category"
-          :available="book.available"
+          :title="book.judul || book.title"
+          :author="book.penulis || book.author"
+          :cover-image="book.cover_url || book.coverImage"
+          :category="(book.kategori_list && book.kategori_list.length > 0) ? book.kategori_list.join(', ') : (book.kategori || book.category)"
+          :available="book.jumlah === undefined ? true : book.jumlah > 0"
         />
       </div>
       

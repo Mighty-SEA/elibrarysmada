@@ -161,4 +161,23 @@ class BookController extends Controller
         Excel::import(new \App\Imports\BooksImport, $request->file('file'));
         return Redirect::route('books.index')->with('success', 'Import data buku berhasil!');
     }
+
+    public function home()
+    {
+        $books = Buku::all()->map(function ($book) {
+            if ($book->cover_type === 'url') {
+                $book->cover_url = $book->cover;
+            } else if ($book->cover) {
+                $book->cover_url = '/storage/' . $book->cover;
+            } else {
+                $book->cover_url = null;
+            }
+            // Kategori bisa lebih dari satu, dipisah koma
+            $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
+            return $book;
+        });
+        return \Inertia\Inertia::render('Home', [
+            'books' => $books
+        ]);
+    }
 } 

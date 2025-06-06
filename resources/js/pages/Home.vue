@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import AppFooter from '@/components/AppFooter.vue';
@@ -7,6 +7,8 @@ import { ShoppingCart } from 'lucide-vue-next';
 
 // Tambahkan pengecekan route register
 const hasRegisterRoute = typeof route === 'function' && route.has ? route.has('register') : false;
+
+const page = usePage();
 </script>
 
 <template>
@@ -76,7 +78,7 @@ const hasRegisterRoute = typeof route === 'function' && route.has ? route.has('r
       <!-- Book Catalog -->
       <section class="py-16">
         <div class="container mx-auto px-4">
-          <BookCatalog />
+          <BookCatalog :books="page.props.books" />
         </div>
       </section>
     </main>
