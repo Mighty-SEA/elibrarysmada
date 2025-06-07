@@ -23,15 +23,19 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
     
     // Route manajemen buku
     Route::resource('books', BookController::class);
+    
+    // Bulk actions untuk manajemen buku
+    Route::get('books/export', [BookController::class, 'export'])->name('books.export');
+    Route::post('books/import', [BookController::class, 'import'])->name('books.import');
+    Route::delete('books/bulk-delete', [BookController::class, 'bulkDelete'])->name('books.bulk-delete');
+    Route::put('books/bulk-update-jumlah', [BookController::class, 'bulkUpdateJumlah'])->name('books.bulk-update-jumlah');
+    Route::get('books/all-ids', [BookController::class, 'getAllBookIds'])->name('books.all-ids');
 });
 
 // Route untuk murid dan guru
 Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
 });
-
-Route::get('/books/export', [\App\Http\Controllers\BookController::class, 'export'])->name('books.export');
-Route::post('/books/import', [\App\Http\Controllers\BookController::class, 'import'])->name('books.import');
 
 Route::get('/', [\App\Http\Controllers\BookController::class, 'home'])->name('home');
 

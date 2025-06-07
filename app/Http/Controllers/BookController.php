@@ -15,7 +15,11 @@ class BookController extends Controller
 {
     public function index()
     {
-        $books = Buku::all()->map(function ($book) {
+        $perPage = 10; // Jumlah item per halaman
+        $books = Buku::paginate($perPage);
+        
+        // Tambahkan cover_url ke setiap buku
+        $books->through(function ($book) {
             if ($book->cover_type === 'url') {
                 $book->cover_url = $book->cover;
             } else if ($book->cover) {
@@ -179,5 +183,44 @@ class BookController extends Controller
         return \Inertia\Inertia::render('Home', [
             'books' => $books
         ]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:books,id'
+        ]);
+
+        $count = Buku::whereIn('id', $request->ids)->count();
+        Buku::whereIn('id', $request->ids)->delete();
+        
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' buku berhasil dihapus.'
+        ]);
+    }
+    
+    public function bulkUpdateJumlah(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:books,id',
+            'jumlah' => 'required|integer|min:0'
+        ]);
+        
+        $count = Buku::whereIn('id', $request->ids)->count();
+        Buku::whereIn('id', $request->ids)->update(['jumlah' => $request->jumlah]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Jumlah ' . $count . ' buku berhasil diperbarui.'
+        ]);
+    }
+
+    public function getAllBookIds()
+    {
+        $ids = Buku::pluck('id');
+        return response()->json(['ids' => $ids]);
     }
 } 
