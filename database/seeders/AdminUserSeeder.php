@@ -15,8 +15,8 @@ class AdminUserSeeder extends Seeder
     {
         // Buat user administrasi
         User::create([
-            'name' => 'Admin Perpustakaan',
-            'email' => 'admin@perpus.com',
+            'name' => 'ELista Berlian Tina',
+            'email' => 'elista@myperpus.com',
             'password' => Hash::make('password'),
             'role' => 'administrasi',
         ]);
