@@ -139,8 +139,20 @@ function handleViewChange(view: 'grid' | 'list') {
 
 function handlePageChange(page: number) {
   currentPage.value = page;
-  // Hindari auto-scroll ke atas
-  // window.scrollTo({ top: 0, behavior: 'smooth' });
+  const katalogEl = document.getElementById('katalog');
+  if (katalogEl) {
+    const katalogTop = katalogEl.getBoundingClientRect().top + window.scrollY;
+    const currentScroll = window.scrollY;
+    console.log('katalogTop:', katalogTop, 'currentScroll:', currentScroll);
+    if (currentScroll > katalogTop) {
+      console.log('User di bawah katalog, scroll ke katalog.');
+      katalogEl.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.log('User sudah di atas/di katalog, tidak perlu scroll.');
+    }
+  } else {
+    console.log('Elemen katalog tidak ditemukan.');
+  }
 }
 </script>
 

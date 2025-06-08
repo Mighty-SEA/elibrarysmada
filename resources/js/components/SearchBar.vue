@@ -21,6 +21,16 @@ const eventBus = useEventBus();
 // Cek jika sedang berada di halaman detail buku
 const isBookDetailPage = window.location.pathname.includes('/book/');
 
+function scrollToKatalogIfNeeded() {
+  const katalogEl = document.getElementById('katalog');
+  if (katalogEl) {
+    console.log('search: Selalu scroll ke katalog.');
+    katalogEl.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    console.log('search: Elemen katalog tidak ditemukan.');
+  }
+}
+
 function handleSearch(navigate = true) {
   if (isBookDetailPage && navigate) {
     // Jika di halaman detail buku, redirect ke home dengan query pencarian
@@ -32,6 +42,7 @@ function handleSearch(navigate = true) {
         // Setelah navigasi ke halaman home, emit event search untuk memulai pencarian
         setTimeout(() => {
           eventBus.emit('search', searchQuery.value);
+          scrollToKatalogIfNeeded();
         }, 100);
       }
     });
@@ -45,9 +56,9 @@ function handleSearch(navigate = true) {
         replace: true,
       });
     }
-    
     // Gunakan event bus untuk pencarian
     eventBus.emit('search', searchQuery.value);
+    scrollToKatalogIfNeeded();
   }
 }
 </script>
