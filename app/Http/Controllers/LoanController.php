@@ -17,11 +17,6 @@ class LoanController extends Controller
      */
     public function index(Request $request)
     {
-        // Only admin can access this page
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->route('home');
-        }
-
         $status = $request->query('status', 'all');
         
         $query = Loan::with(['user', 'book', 'approver'])
@@ -68,11 +63,6 @@ class LoanController extends Controller
      */
     public function pendingApproval()
     {
-        // Only admin can access this page
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->route('home');
-        }
-
         $loans = Loan::with(['user', 'book'])
             ->where('status', 'belum_diambil')
             ->orderBy('created_at', 'desc')
@@ -95,11 +85,6 @@ class LoanController extends Controller
      */
     public function activeLoans()
     {
-        // Only admin can access this page
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->route('home');
-        }
-
         $loans = Loan::with(['user', 'book'])
             ->whereIn('status', ['dipinjam', 'terlambat'])
             ->orderBy('created_at', 'desc')
@@ -216,11 +201,6 @@ class LoanController extends Controller
      */
     public function approveLoan(Request $request, Loan $loan)
     {
-        // Only admin can approve loans
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menyetujui peminjaman.');
-        }
-        
         $request->validate([
             'due_date' => 'required|date|after:today',
         ]);
@@ -254,11 +234,6 @@ class LoanController extends Controller
      */
     public function returnBook(Request $request, Loan $loan)
     {
-        // Only admin can process returns
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk memproses pengembalian.');
-        }
-        
         // Check if the loan is in 'dipinjam' or 'terlambat' status
         if (!in_array($loan->status, ['dipinjam', 'terlambat'])) {
             return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk dikembalikan.');
@@ -308,11 +283,6 @@ class LoanController extends Controller
      */
     public function rejectRequest(Loan $loan)
     {
-        // Only admin can reject loans
-        if (!Auth::user()->isAdmin()) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menolak peminjaman.');
-        }
-        
         // Check if the loan is in 'belum_diambil' status
         if ($loan->status !== 'belum_diambil') {
             return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk ditolak.');

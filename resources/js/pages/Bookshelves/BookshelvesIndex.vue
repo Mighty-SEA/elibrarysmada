@@ -1,12 +1,10 @@
-// New Bookshelves Page
-
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, BookMarked, CheckCircle2, AlertTriangle, Clock } from 'lucide-vue-next';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, BookMarked, CheckCircle2, AlertTriangle, Clock, Calendar } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 // Props
-defineProps<{
+const props = defineProps<{
   activeLoans: Array<{
     id: number;
     book_id: number;
@@ -351,4 +349,4 @@ const calculateDaysLeft = (dueDateString: string) => {
       </div>
     </main>
   </div>
-</template>
+</template> 
