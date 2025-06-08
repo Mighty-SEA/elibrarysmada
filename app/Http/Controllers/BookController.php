@@ -185,6 +185,44 @@ class BookController extends Controller
         ]);
     }
 
+    public function detail(Buku $book)
+    {
+        // Siapkan data buku untuk detail view
+        if ($book->cover_type === 'url') {
+            $book->cover_url = $book->cover;
+        } else if ($book->cover) {
+            $book->cover_url = '/storage/' . $book->cover;
+        } else {
+            $book->cover_url = null;
+        }
+        
+        // Proses kategori menjadi array untuk tampilan
+        $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
+        
+        // Ambil buku-buku terkait berdasarkan kategori
+        $relatedBooks = Buku::where('id', '!=', $book->id)
+            ->whereRaw('FIND_IN_SET(?, REPLACE(kategori, ", ", ","))', [$book->kategori_list[0] ?? ''])
+            ->orWhereRaw('FIND_IN_SET(?, REPLACE(kategori, ", ", ","))', [$book->kategori_list[1] ?? ''])
+            ->limit(6)
+            ->get()
+            ->map(function ($relatedBook) {
+                if ($relatedBook->cover_type === 'url') {
+                    $relatedBook->cover_url = $relatedBook->cover;
+                } else if ($relatedBook->cover) {
+                    $relatedBook->cover_url = '/storage/' . $relatedBook->cover;
+                } else {
+                    $relatedBook->cover_url = null;
+                }
+                $relatedBook->kategori_list = $relatedBook->kategori ? array_map('trim', explode(',', $relatedBook->kategori)) : [];
+                return $relatedBook;
+            });
+
+        return Inertia::render('BookDetail', [
+            'book' => $book,
+            'relatedBooks' => $relatedBooks
+        ]);
+    }
+
     public function bulkDelete(Request $request)
     {
         $request->validate([

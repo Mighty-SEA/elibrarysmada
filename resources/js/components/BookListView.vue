@@ -16,7 +16,7 @@ defineProps<{
           :src="book.cover_url || book.coverImage" 
           :alt="book.judul || book.title" 
           class="w-full h-full object-cover"
-          onerror="this.src='/images/book-placeholder.png'; this.onerror=null;"
+          onerror="this.src='/images/book-placeholder.svg'; this.onerror=null;"
         />
       </div>
       
@@ -59,7 +59,7 @@ defineProps<{
         
         <div class="mt-4 flex justify-end">
           <Link
-            :href="route('books.show', book.id)"
+            :href="route('book.detail', book.id)"
             class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Detail Buku

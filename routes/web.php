@@ -8,9 +8,11 @@ use App\Http\Middleware\CheckUserType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-})->name('home');
+// Home route using controller
+Route::get('/', [\App\Http\Controllers\BookController::class, 'home'])->name('home');
+
+// Book detail route
+Route::get('/book/{book}', [\App\Http\Controllers\BookController::class, 'detail'])->name('book.detail');
 
 // Route untuk administrasi
 Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':admin'])->group(function () {
@@ -36,8 +38,6 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
 Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
 });
-
-Route::get('/', [\App\Http\Controllers\BookController::class, 'home'])->name('home');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
