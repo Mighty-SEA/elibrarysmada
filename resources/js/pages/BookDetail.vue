@@ -65,13 +65,63 @@ async function handleBorrowBook() {
       showModal.value = true;
       
       // Don't mutate the prop directly
-      if (props.book.jumlah > 0) {
+      if (props.book.ketersediaan > 0) {
         // Create a local copy instead
-        const updatedBook = { ...props.book, jumlah: props.book.jumlah - 1 };
+        const updatedBook = { 
+          ...props.book, 
+          ketersediaan: props.book.ketersediaan - 1 
+        };
+        
         // Update only what's displayed in the template
         const countElement = document.querySelector('[data-book-count]');
         if (countElement) {
-          countElement.textContent = `Tersedia (${updatedBook.jumlah})`;
+          if (updatedBook.ketersediaan > 0) {
+            countElement.textContent = `Tersedia (${updatedBook.ketersediaan})`;
+          } else {
+            countElement.textContent = 'Tidak Tersedia';
+            // Find the parent of countElement with a class containing 'bg-green'
+            const parent = countElement.closest('.bg-green-100');
+            if (parent) {
+              parent.classList.remove('bg-green-100', 'text-green-800');
+              parent.classList.add('bg-red-100', 'text-red-800');
+              
+              // Find and remove the animated dot
+              const animatedDot = parent.querySelector('.relative.flex.h-2.w-2.mr-2');
+              if (animatedDot) {
+                animatedDot.remove();
+                
+                // Create and add the red dot
+                const redDot = document.createElement('span');
+                redDot.className = 'h-2 w-2 bg-red-500 rounded-full mr-2';
+                parent.insertBefore(redDot, countElement);
+              }
+            }
+          }
+        }
+        
+        // Update the availability in the book details
+        const availabilityElement = document.querySelector('.text-sm.font-medium.text-gray-700 + p .text-green-700, .text-sm.font-medium.text-gray-700 + p .text-red-600');
+        if (availabilityElement) {
+          availabilityElement.textContent = updatedBook.ketersediaan;
+          if (updatedBook.ketersediaan === 0) {
+            availabilityElement.classList.remove('text-green-700');
+            availabilityElement.classList.add('text-red-600');
+          }
+        }
+        
+        // Hide the borrow button if no books are available anymore
+        if (updatedBook.ketersediaan === 0) {
+          const borrowButtonContainer = document.querySelector('.flex.justify-end');
+          const unavailableMessage = document.createElement('div');
+          unavailableMessage.className = 'bg-red-50 border border-red-200 rounded-lg p-4 w-full';
+          unavailableMessage.innerHTML = `
+            <p class="text-red-800 font-medium">Buku tidak tersedia untuk dipinjam</p>
+            <p class="text-red-700 text-sm mt-1">Semua salinan buku ini sedang dipinjam. Silakan coba lagi nanti.</p>
+          `;
+          
+          if (borrowButtonContainer && borrowButtonContainer.parentNode) {
+            borrowButtonContainer.parentNode.replaceChild(unavailableMessage, borrowButtonContainer);
+          }
         }
       }
     }
@@ -335,14 +385,14 @@ const hasRegisterRoute = computed(() => {
                 <div>
                   <span 
                     class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium shadow-sm"
-                    :class="book.jumlah > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                    :class="book.ketersediaan > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                   >
-                    <span v-if="book.jumlah > 0" class="relative flex h-2 w-2 mr-2">
+                    <span v-if="book.ketersediaan > 0" class="relative flex h-2 w-2 mr-2">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
                     <span v-else class="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
-                    <span data-book-count>{{ book.jumlah > 0 ? `Tersedia (${book.jumlah})` : 'Tidak Tersedia' }}</span>
+                    <span data-book-count>{{ book.ketersediaan > 0 ? `Tersedia (${book.ketersediaan})` : 'Tidak Tersedia' }}</span>
                   </span>
                 </div>
               </div>
@@ -414,8 +464,25 @@ const hasRegisterRoute = computed(() => {
                     <li class="flex items-start gap-2">
                       <BookOpen class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm font-medium text-gray-700">Jumlah Tersedia</span>
-                        <p class="text-gray-800">{{ book.jumlah || 0 }} buku</p>
+                        <span class="text-sm font-medium text-gray-700">Stok Buku</span>
+                        <p class="text-gray-800">
+                          <span>Total: <span class="font-medium">{{ book.jumlah || 0 }}</span> buku</span>
+                          <span class="mx-1">•</span>
+                          <span>Tersedia: <span 
+                            :class="book.ketersediaan > 0 ? 'font-medium text-green-700' : 'font-medium text-red-600'"
+                          >{{ book.ketersediaan || 0 }}</span> buku</span>
+                        </p>
+                        <p v-if="book.jumlah > book.ketersediaan" class="text-xs text-gray-600 mt-1">
+                          <span v-if="book.pending_loans_count > 0">
+                            {{ book.pending_loans_count }} orang belum mengambil buku
+                          </span>
+                          <span v-if="book.pending_loans_count > 0 && book.borrowed_loans_count > 0">
+                            • 
+                          </span>
+                          <span v-if="book.borrowed_loans_count > 0">
+                            {{ book.borrowed_loans_count }} buku sedang dipinjam
+                          </span>
+                        </p>
                       </div>
                     </li>
                   </ul>
@@ -459,7 +526,7 @@ const hasRegisterRoute = computed(() => {
                 
                 <!-- User Button - Logged In -->
                 <div v-else-if="isUser()" class="w-full">
-                  <div v-if="book.jumlah > 0" class="flex justify-end">
+                  <div v-if="book.ketersediaan > 0" class="flex justify-end">
                     <button 
                       @click="handleBorrowBook"
                       class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
@@ -475,7 +542,11 @@ const hasRegisterRoute = computed(() => {
                   </div>
                   <div v-else class="bg-red-50 border border-red-200 rounded-lg p-4 w-full">
                     <p class="text-red-800 font-medium">Buku tidak tersedia untuk dipinjam</p>
-                    <p class="text-red-700 text-sm mt-1">Semua salinan buku ini sedang dipinjam. Silakan coba lagi nanti.</p>
+                    <p class="text-red-700 text-sm mt-1">
+                      {{ book.pending_loans_count > 0 ? 
+                        `${book.pending_loans_count} orang belum mengambil buku ini di perpustakaan.` : 
+                        'Semua salinan buku ini sedang dipinjam. Silakan coba lagi nanti.' }}
+                    </p>
                   </div>
                 </div>
                 

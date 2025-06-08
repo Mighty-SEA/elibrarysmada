@@ -41,6 +41,8 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
     Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
     Route::get('/loans/pending', [LoanController::class, 'pendingApproval'])->name('loans.pending');
     Route::get('/loans/active', [LoanController::class, 'activeLoans'])->name('loans.active');
+    Route::get('/loans/create', [LoanController::class, 'create'])->name('loans.create');
+    Route::post('/loans/store', [LoanController::class, 'storeLoan'])->name('loans.store');
     Route::post('/loans/{loan}/approve', [LoanController::class, 'approveLoan'])->name('loans.approve');
     Route::post('/loans/{loan}/return', [LoanController::class, 'returnBook'])->name('loans.return');
     Route::delete('/loans/{loan}/reject', [LoanController::class, 'rejectRequest'])->name('loans.reject');

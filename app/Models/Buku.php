@@ -19,6 +19,7 @@ class Buku extends Model
         'tahun_terbit',
         'isbn',
         'jumlah',
+        'ketersediaan',
         'lokasi',
         'deskripsi',
         'kategori',
@@ -69,7 +70,39 @@ class Buku extends Model
     }
 
     /**
-     * Decrease book stock by given amount
+     * Decrease book availability by given amount
+     * 
+     * @param int $amount Amount to decrease
+     * @return bool Whether the operation was successful
+     */
+    public function decreaseAvailability(int $amount = 1): bool
+    {
+        if ($this->ketersediaan < $amount) {
+            return false;
+        }
+        
+        $this->ketersediaan -= $amount;
+        return $this->save();
+    }
+
+    /**
+     * Increase book availability by given amount
+     * 
+     * @param int $amount Amount to increase
+     * @return bool Whether the operation was successful
+     */
+    public function increaseAvailability(int $amount = 1): bool
+    {
+        $this->ketersediaan += $amount;
+        if ($this->ketersediaan > $this->jumlah) {
+            $this->ketersediaan = $this->jumlah;
+        }
+        return $this->save();
+    }
+    
+    /**
+     * Decrease book total stock by given amount
+     * This affects both jumlah and ketersediaan
      * 
      * @param int $amount Amount to decrease
      * @return bool Whether the operation was successful
@@ -81,11 +114,18 @@ class Buku extends Model
         }
         
         $this->jumlah -= $amount;
+        
+        // Ensure ketersediaan doesn't exceed jumlah
+        if ($this->ketersediaan > $this->jumlah) {
+            $this->ketersediaan = $this->jumlah;
+        }
+        
         return $this->save();
     }
 
     /**
-     * Increase book stock by given amount
+     * Increase book total stock by given amount
+     * This affects both jumlah and ketersediaan
      * 
      * @param int $amount Amount to increase
      * @return bool Whether the operation was successful
@@ -93,6 +133,7 @@ class Buku extends Model
     public function increaseStock(int $amount = 1): bool
     {
         $this->jumlah += $amount;
+        $this->ketersediaan += $amount;
         return $this->save();
     }
 
@@ -103,6 +144,6 @@ class Buku extends Model
      */
     public function isAvailable(): bool
     {
-        return $this->jumlah > 0;
+        return $this->ketersediaan > 0;
     }
 } 

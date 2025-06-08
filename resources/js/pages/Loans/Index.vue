@@ -125,6 +125,12 @@ const formatDate = (dateString: string | null) => {
         </div>
         <div class="flex space-x-3">
           <Link
+            :href="route('loans.create')" 
+            class="inline-flex items-center px-4 py-2 bg-blue-600 border border-blue-600 rounded-md font-medium text-white hover:bg-blue-700"
+          >
+            Buat Peminjaman
+          </Link>
+          <Link
             :href="route('loans.pending')" 
             class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50"
           >

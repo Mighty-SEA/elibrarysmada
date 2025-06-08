@@ -193,6 +193,9 @@ class LoanController extends Controller
             'request_date' => Carbon::now(),
         ]);
         
+        // Decrease book availability but not the total stock
+        $book->decreaseAvailability();
+        
         return redirect()->route('loans.user')->with('success', 'Permintaan peminjaman buku berhasil. Silakan ambil buku di perpustakaan.');
     }
 
@@ -210,11 +213,8 @@ class LoanController extends Controller
             return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk disetujui.');
         }
         
-        // Check if book is still available
+        // Check if book is still available (this should always be true since we reduced availability at request time)
         $book = $loan->book;
-        if (!$book->isAvailable()) {
-            return redirect()->back()->with('error', 'Stok buku tidak tersedia.');
-        }
         
         // Update loan status
         $loan->status = 'dipinjam';
@@ -222,9 +222,6 @@ class LoanController extends Controller
         $loan->approval_by = Auth::id();
         $loan->due_date = Carbon::parse($request->due_date);
         $loan->save();
-        
-        // Decrease book stock
-        $book->decreaseStock();
         
         return redirect()->route('loans.pending')->with('success', 'Peminjaman berhasil disetujui dan buku telah diserahkan.');
     }
@@ -252,8 +249,8 @@ class LoanController extends Controller
         $loan->fine_amount = $fineAmount;
         $loan->save();
         
-        // Increase book stock
-        $loan->book->increaseStock();
+        // Increase book availability
+        $loan->book->increaseAvailability();
         
         return redirect()->route('loans.active')->with('success', 'Buku berhasil dikembalikan.');
     }
@@ -273,6 +270,9 @@ class LoanController extends Controller
             return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk dibatalkan.');
         }
         
+        // Increase book availability since the request is canceled
+        $loan->book->increaseAvailability();
+        
         $loan->delete();
         
         return redirect()->route('loans.user')->with('success', 'Permintaan peminjaman berhasil dibatalkan.');
@@ -288,8 +288,77 @@ class LoanController extends Controller
             return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk ditolak.');
         }
         
+        // Increase book availability since the request is rejected
+        $loan->book->increaseAvailability();
+        
         $loan->delete();
         
         return redirect()->route('loans.pending')->with('success', 'Permintaan peminjaman berhasil ditolak.');
+    }
+
+    /**
+     * Show the form for creating a new loan
+     */
+    public function create()
+    {
+        // Get all users except administrators
+        $users = User::where('role', '!=', 'administrasi')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role']);
+            
+        // Get all available books
+        $books = Buku::where('ketersediaan', '>', 0)
+            ->orderBy('judul')
+            ->get(['id', 'judul', 'penulis', 'ketersediaan']);
+            
+        return Inertia::render('Loans/Create', [
+            'users' => $users,
+            'books' => $books
+        ]);
+    }
+    
+    /**
+     * Store a newly created loan
+     */
+    public function storeLoan(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'book_id' => 'required|exists:books,id',
+            'due_date' => 'required|date|after:today',
+        ]);
+        
+        $book = Buku::find($request->book_id);
+        
+        // Check if book is available
+        if (!$book->isAvailable()) {
+            return redirect()->back()->with('error', 'Buku tidak tersedia untuk dipinjam.');
+        }
+        
+        // Check if user already has a pending or active loan for this book
+        $existingLoan = Loan::where('user_id', $request->user_id)
+            ->where('book_id', $book->id)
+            ->whereIn('status', ['belum_diambil', 'dipinjam', 'terlambat'])
+            ->first();
+            
+        if ($existingLoan) {
+            return redirect()->back()->with('error', 'Pengguna ini sudah meminjam atau mengajukan peminjaman untuk buku ini.');
+        }
+        
+        // Create loan with approved status directly
+        Loan::create([
+            'user_id' => $request->user_id,
+            'book_id' => $book->id,
+            'status' => 'dipinjam',
+            'request_date' => Carbon::now(),
+            'approval_date' => Carbon::now(),
+            'approval_by' => Auth::id(),
+            'due_date' => Carbon::parse($request->due_date),
+        ]);
+        
+        // Decrease book availability
+        $book->decreaseAvailability();
+        
+        return redirect()->route('loans.index')->with('success', 'Peminjaman buku berhasil dibuat.');
     }
 } 

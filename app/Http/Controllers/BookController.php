@@ -77,6 +77,9 @@ class BookController extends Controller
         }
         $validated['cover_type'] = $request->cover_type;
         
+        // Set ketersediaan to match jumlah
+        $validated['ketersediaan'] = $validated['jumlah'];
+        
         \App\Models\Buku::create($validated);
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan.');
     }
@@ -108,6 +111,7 @@ class BookController extends Controller
             'tahun_terbit' => 'nullable',
             'isbn' => 'nullable',
             'jumlah' => 'nullable|integer',
+            'ketersediaan' => 'nullable|integer',
             'lokasi' => 'nullable',
             'deskripsi' => 'nullable',
             'kategori' => 'nullable',
@@ -141,6 +145,14 @@ class BookController extends Controller
             $validated['cover'] = $request->cover;
         }
         $validated['cover_type'] = $request->cover_type;
+        
+        // Make sure ketersediaan doesn't exceed jumlah
+        if (!isset($validated['ketersediaan'])) {
+            $validated['ketersediaan'] = $validated['jumlah'];
+        } else if ($validated['ketersediaan'] > $validated['jumlah']) {
+            $validated['ketersediaan'] = $validated['jumlah'];
+        }
+        
         $book->update($validated);
         return redirect()->route('books.index')->with('success', 'Buku berhasil diupdate.');
     }
@@ -203,6 +215,12 @@ class BookController extends Controller
         // Proses kategori menjadi array untuk tampilan
         $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
         
+        // Hitung jumlah peminjaman dalam status "belum_diambil"
+        $book->pending_loans_count = $book->loans()->where('status', 'belum_diambil')->count();
+        
+        // Hitung jumlah peminjaman dalam status "dipinjam" atau "terlambat"
+        $book->borrowed_loans_count = $book->loans()->whereIn('status', ['dipinjam', 'terlambat'])->count();
+        
         // Ambil buku-buku terkait berdasarkan kategori
         $relatedBooks = Buku::where('id', '!=', $book->id)
             ->whereRaw('FIND_IN_SET(?, REPLACE(kategori, ", ", ","))', [$book->kategori_list[0] ?? ''])
@@ -252,7 +270,10 @@ class BookController extends Controller
         ]);
         
         $count = Buku::whereIn('id', $request->ids)->count();
-        Buku::whereIn('id', $request->ids)->update(['jumlah' => $request->jumlah]);
+        Buku::whereIn('id', $request->ids)->update([
+            'jumlah' => $request->jumlah,
+            'ketersediaan' => $request->jumlah
+        ]);
         
         return response()->json([
             'success' => true,

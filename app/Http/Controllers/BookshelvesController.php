@@ -122,6 +122,9 @@ class BookshelvesController extends Controller
             'request_date' => Carbon::now(),
         ]);
         
+        // Decrease book availability but not the total stock
+        $book->decreaseAvailability();
+        
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -146,6 +149,10 @@ class BookshelvesController extends Controller
         if ($loan->status !== 'belum_diambil') {
             return redirect()->route('bookshelves')->with('error', 'Status peminjaman tidak valid untuk dibatalkan.');
         }
+        
+        // Increase book availability since the request is canceled
+        $book = $loan->book;
+        $book->increaseAvailability();
         
         // Delete the loan request
         $loan->delete();
