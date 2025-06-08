@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, ShoppingCart, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { BookOpen, ShoppingCart, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp, BookMarked } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import SearchBar from '@/components/SearchBar.vue';
 import BookCard from '@/components/BookCard.vue';
@@ -112,11 +112,11 @@ const hasRegisterRoute = computed(() => {
               <!-- Tombol Keranjang untuk murid dan guru -->
               <Link
                 v-else
-                :href="route('cart')"
+                :href="route('bookshelves')"
                 class="inline-flex items-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
               >
-                <ShoppingCart class="h-4 w-4" />
-                Keranjang
+                <BookMarked class="h-4 w-4" />
+                Rak Buku
               </Link>
             </template>
             
@@ -179,11 +179,11 @@ const hasRegisterRoute = computed(() => {
             
             <Link
               v-else
-              :href="route('cart')"
+              :href="route('bookshelves')"
               class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"
             >
-              <ShoppingCart class="h-5 w-5" />
-              Keranjang
+              <BookMarked class="h-5 w-5" />
+              Rak Buku
             </Link>
           </template>
           
@@ -374,11 +374,11 @@ const hasRegisterRoute = computed(() => {
                 <div class="mt-3 sm:mt-0">
                   <Link 
                     v-if="page.props.auth && page.props.auth.user && page.props.auth.user.role !== 'administrasi' && book.jumlah > 0"
-                    :href="route('cart')"
+                    :href="route('bookshelves')"
                     class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    <ShoppingCart class="h-5 w-5" />
-                    Tambahkan ke Keranjang
+                    <BookMarked class="h-5 w-5" />
+                    Tambahkan ke Rak Buku
                   </Link>
                   
                   <Link 

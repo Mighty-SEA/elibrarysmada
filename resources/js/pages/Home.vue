@@ -2,19 +2,20 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
-import { ShoppingCart, BookOpen, Menu, X, Search, UserPlus } from 'lucide-vue-next';
+import { BookMarked, BookOpen, Menu, X, Search, UserPlus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import type { SharedData } from '@/types';
 
 // Cek apakah rute register tersedia
 const hasRegisterRoute = computed(() => {
   try {
     return route().has('register');
-  } catch (error) {
+  } catch {
     return false;
   }
 });
 
-const page = usePage();
+const page = usePage<SharedData>();
 const isMobileMenuOpen = ref(false);
 const isMobileSearchOpen = ref(false);
 
@@ -40,7 +41,7 @@ function isAdmin() {
 function getLoginUrl() {
   try {
     return route('login');
-  } catch (error) {
+  } catch {
     return '/login';
   }
 }
@@ -49,7 +50,7 @@ function getLoginUrl() {
 function getRegisterUrl() {
   try {
     return route('register');
-  } catch (error) {
+  } catch {
     return '/register';
   }
 }
@@ -97,14 +98,14 @@ function getRegisterUrl() {
                 Dashboard
               </Link>
               
-              <!-- Tombol Keranjang untuk murid dan guru -->
+              <!-- Tombol Rak Buku untuk murid dan guru -->
               <Link
                 v-else
-                :href="route('cart')"
+                :href="route('bookshelves')"
                 class="inline-flex items-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
               >
-                <ShoppingCart class="h-4 w-4" />
-                Keranjang
+                <BookMarked class="h-4 w-4" />
+                Rak Buku
               </Link>
             </template>
             
@@ -167,11 +168,11 @@ function getRegisterUrl() {
             
             <Link
               v-else
-              :href="route('cart')"
+              :href="route('bookshelves')"
               class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"
             >
-              <ShoppingCart class="h-5 w-5" />
-              Keranjang
+              <BookMarked class="h-5 w-5" />
+              Rak Buku
             </Link>
           </template>
           

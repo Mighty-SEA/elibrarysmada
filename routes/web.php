@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\CartController;
+use App\Http\Controllers\BookshelvesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\BookController;
@@ -39,7 +39,7 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
 
 // Route untuk murid dan guru
 Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::get('/bookshelves', [BookshelvesController::class, 'index'])->name('bookshelves');
 });
 
 require __DIR__.'/settings.php';

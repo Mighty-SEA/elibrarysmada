@@ -18,7 +18,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, BookMarked } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -51,9 +51,9 @@ const adminNavItems: NavItem[] = [
 // Menu untuk guru dan murid
 const userNavItems: NavItem[] = [
     {
-        title: 'Keranjang',
-        href: '/cart',
-        icon: ShoppingCart,
+        title: 'Rak Buku',
+        href: '/bookshelves',
+        icon: BookMarked,
     },
 ];
 
@@ -169,20 +169,20 @@ const homeRoute = computed(() => {
                             <Search class="size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
 
-                        <!-- Tombol Keranjang untuk user non-admin -->
+                        <!-- Tombol Rak Buku untuk user non-admin -->
                         <div v-if="user?.role !== 'administrasi'" class="mr-2">
                             <TooltipProvider :delay-duration="0">
                                 <Tooltip>
                                     <TooltipTrigger>
                                         <Button variant="ghost" size="icon" as-child class="group h-9 w-9 cursor-pointer">
-                                            <Link :href="route('cart')">
-                                                <span class="sr-only">Keranjang</span>
-                                                <ShoppingCart class="size-5 opacity-80 group-hover:opacity-100" />
+                                            <Link :href="route('bookshelves')">
+                                                <span class="sr-only">Rak Buku</span>
+                                                <BookMarked class="size-5 opacity-80 group-hover:opacity-100" />
                                             </Link>
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>Keranjang</p>
+                                        <p>Rak Buku</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>

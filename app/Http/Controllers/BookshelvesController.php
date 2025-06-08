@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class CartController extends Controller
+class BookshelvesController extends Controller
 {
     /**
-     * Menampilkan halaman keranjang
+     * Menampilkan halaman rak buku
      *
      * @return \Inertia\Response
      */
     public function index()
     {
-        return Inertia::render('Cart/Index');
+        return Inertia::render('Bookshelves/Index');
     }
-}
+} 
