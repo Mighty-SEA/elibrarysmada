@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp, BookMarked } from 'lucide-vue-next';
+import { BookOpen, Tag, User, Building, Calendar, Hash, MapPin, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp, BookMarked, LogOut, FileText, CheckCircle, AlertCircle } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import SearchBar from '@/components/SearchBar.vue';
 import BookCard from '@/components/BookCard.vue';
 import type { SharedData } from '@/types';
+import axios from 'axios';
 
-defineProps<{
+const props = defineProps<{
   book: any;
   relatedBooks: any[];
 }>();
@@ -15,6 +16,10 @@ const page = usePage<SharedData>();
 const isMobileMenuOpen = ref(false);
 const isMobileSearchOpen = ref(false);
 const isDescriptionExpanded = ref(false);
+const showModal = ref(false);
+const modalStatus = ref('success'); // 'success' or 'error'
+const modalMessage = ref('');
+const isLoading = ref(false);
 
 // Fungsi untuk membuka dan menutup mobile menu
 function toggleMobileMenu() {
@@ -34,9 +39,69 @@ function toggleDescription() {
   isDescriptionExpanded.value = !isDescriptionExpanded.value;
 }
 
+// Fungsi untuk menangani peminjaman buku
+async function handleBorrowBook() {
+  if (isLoading.value) return;
+  
+  isLoading.value = true;
+  
+  try {
+    // Get CSRF token from meta tag
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    const response = await axios.post(route('loans.request'), {
+      book_id: props.book.id
+    }, {
+      headers: {
+        'X-CSRF-TOKEN': token,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.data.success) {
+      modalStatus.value = 'success';
+      modalMessage.value = response.data.message || 'Permintaan peminjaman buku berhasil! Silakan ambil buku di perpustakaan.';
+      showModal.value = true;
+      
+      // Don't mutate the prop directly
+      if (props.book.jumlah > 0) {
+        // Create a local copy instead
+        const updatedBook = { ...props.book, jumlah: props.book.jumlah - 1 };
+        // Update only what's displayed in the template
+        const countElement = document.querySelector('[data-book-count]');
+        if (countElement) {
+          countElement.textContent = `Tersedia (${updatedBook.jumlah})`;
+        }
+      }
+    }
+  } catch (error: any) { // Type assertion for error
+    modalStatus.value = 'error';
+    modalMessage.value = error.response?.data?.message || 'Terjadi kesalahan saat memproses permintaan peminjaman.';
+    showModal.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Fungsi untuk menutup modal
+function closeModal() {
+  showModal.value = false;
+}
+
+// Fungsi untuk navigasi ke rak buku
+function navigateToBookshelf() {
+  window.location.href = route('bookshelves');
+}
+
 // Fungsi helper untuk cek admin
 function isAdmin() {
   return page.props.auth?.user?.role === 'administrasi';
+}
+
+// Fungsi helper untuk cek user (murid/guru)
+function isUser() {
+  return page.props.auth?.user && page.props.auth?.user?.role !== 'administrasi';
 }
 
 // Fungsi untuk mendapatkan login URL
@@ -109,7 +174,7 @@ const hasRegisterRoute = computed(() => {
                 Dashboard
               </Link>
               
-              <!-- Tombol Keranjang untuk murid dan guru -->
+              <!-- Tombol Rak Buku untuk murid dan guru -->
               <Link
                 v-else
                 :href="route('bookshelves')"
@@ -117,6 +182,17 @@ const hasRegisterRoute = computed(() => {
               >
                 <BookMarked class="h-4 w-4" />
                 Rak Buku
+              </Link>
+              
+              <!-- Tombol Logout untuk semua user -->
+              <Link
+                :href="route('logout')"
+                method="post"
+                as="button"
+                class="inline-flex items-center gap-2 rounded-md border border-red-600 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                <LogOut class="h-4 w-4" />
+                Logout
               </Link>
             </template>
             
@@ -172,8 +248,9 @@ const hasRegisterRoute = computed(() => {
             <Link
               v-if="isAdmin()"
               :href="route('dashboard')"
-              class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md"
+              class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md flex items-center gap-2"
             >
+              <FileText class="h-5 w-5" />
               Dashboard
             </Link>
             
@@ -184,6 +261,16 @@ const hasRegisterRoute = computed(() => {
             >
               <BookMarked class="h-5 w-5" />
               Rak Buku
+            </Link>
+            
+            <Link
+              :href="route('logout')"
+              method="post"
+              as="button"
+              class="block px-2 py-2 text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
+            >
+              <LogOut class="h-5 w-5" />
+              Logout
             </Link>
           </template>
           
@@ -236,55 +323,60 @@ const hasRegisterRoute = computed(() => {
             </div>
             
             <!-- Book Information -->
-            <div class="md:w-2/3 lg:w-3/4 p-6 md:p-8">
+            <div class="md:w-2/3 lg:w-3/4 p-4 md:p-6">
               <!-- Book Title and Status -->
-              <div class="flex flex-wrap justify-between gap-4 mb-6">
+              <div class="flex flex-wrap justify-between gap-3 mb-5">
                 <div>
-                  <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ book.judul }}</h1>
+                  <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">{{ book.judul }}</h1>
                   <p class="text-lg text-gray-700">
                     <span class="font-medium">Penulis:</span> {{ book.penulis || 'Tidak diketahui' }}
                   </p>
                 </div>
                 <div>
                   <span 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                    class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium shadow-sm"
                     :class="book.jumlah > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                   >
-                    {{ book.jumlah > 0 ? 'Tersedia' : 'Tidak Tersedia' }}
+                    <span v-if="book.jumlah > 0" class="relative flex h-2 w-2 mr-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span v-else class="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                    <span data-book-count>{{ book.jumlah > 0 ? `Tersedia (${book.jumlah})` : 'Tidak Tersedia' }}</span>
                   </span>
                 </div>
               </div>
               
               <!-- Book Details Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div>
-                  <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Buku</h2>
-                  <ul class="space-y-3">
+                  <h2 class="text-lg font-semibold text-gray-900 mb-3 border-b pb-1 border-gray-200">Informasi Buku</h2>
+                  <ul class="space-y-2.5">
                     <li class="flex items-start gap-2">
-                      <User class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <User class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Penulis</span>
+                        <span class="text-sm font-medium text-gray-700">Penulis</span>
                         <p class="text-gray-800">{{ book.penulis || 'Tidak diketahui' }}</p>
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Building class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <Building class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Penerbit</span>
+                        <span class="text-sm font-medium text-gray-700">Penerbit</span>
                         <p class="text-gray-800">{{ book.penerbit || 'Tidak diketahui' }}</p>
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Calendar class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <Calendar class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Tahun Terbit</span>
+                        <span class="text-sm font-medium text-gray-700">Tahun Terbit</span>
                         <p class="text-gray-800">{{ book.tahun_terbit || 'Tidak diketahui' }}</p>
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <Hash class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <Hash class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">ISBN</span>
+                        <span class="text-sm font-medium text-gray-700">ISBN</span>
                         <p class="text-gray-800">{{ book.isbn || 'Tidak diketahui' }}</p>
                       </div>
                     </li>
@@ -292,17 +384,17 @@ const hasRegisterRoute = computed(() => {
                 </div>
                 
                 <div>
-                  <h2 class="text-lg font-semibold text-gray-900 mb-4">Detail Lainnya</h2>
-                  <ul class="space-y-3">
+                  <h2 class="text-lg font-semibold text-gray-900 mb-3 border-b pb-1 border-gray-200">Detail Lainnya</h2>
+                  <ul class="space-y-2.5">
                     <li class="flex items-start gap-2">
-                      <Tag class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <Tag class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Kategori</span>
+                        <span class="text-sm font-medium text-gray-700">Kategori</span>
                         <div class="flex flex-wrap gap-1 mt-1">
                           <span 
                             v-for="(category, index) in book.kategori_list" 
                             :key="index"
-                            class="inline-block px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
+                            class="inline-block px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 border border-blue-200"
                           >
                             {{ category }}
                           </span>
@@ -313,16 +405,16 @@ const hasRegisterRoute = computed(() => {
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <MapPin class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <MapPin class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Lokasi</span>
+                        <span class="text-sm font-medium text-gray-700">Lokasi</span>
                         <p class="text-gray-800">{{ book.lokasi || 'Tidak tersedia' }}</p>
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <BookOpen class="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <BookOpen class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm text-gray-500">Jumlah Tersedia</span>
+                        <span class="text-sm font-medium text-gray-700">Jumlah Tersedia</span>
                         <p class="text-gray-800">{{ book.jumlah || 0 }} buku</p>
                       </div>
                     </li>
@@ -331,25 +423,25 @@ const hasRegisterRoute = computed(() => {
               </div>
               
               <!-- Description -->
-              <div class="mb-8">
-                <div @click="toggleDescription" class="flex justify-between items-center cursor-pointer mb-4">
-                  <h2 class="text-lg font-semibold text-gray-900">Deskripsi</h2>
-                  <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                    <ChevronDown v-if="!isDescriptionExpanded" class="h-5 w-5 text-gray-500" />
-                    <ChevronUp v-else class="h-5 w-5 text-gray-500" />
+              <div class="mb-6">
+                <div @click="toggleDescription" class="flex justify-between items-center cursor-pointer mb-3 bg-blue-50 px-4 py-2 rounded-lg">
+                  <h2 class="text-lg font-semibold text-blue-800">Deskripsi</h2>
+                  <button class="p-1 hover:bg-blue-100 rounded-full transition-colors">
+                    <ChevronDown v-if="!isDescriptionExpanded" class="h-5 w-5 text-blue-600" />
+                    <ChevronUp v-else class="h-5 w-5 text-blue-600" />
                   </button>
                 </div>
                 <transition name="fade-height">
-                  <div v-if="isDescriptionExpanded" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div v-if="isDescriptionExpanded" class="bg-white rounded-lg p-4 border border-gray-200 leading-relaxed">
                     <p class="text-gray-700 whitespace-pre-line text-justify">{{ book.deskripsi || 'Tidak ada deskripsi untuk buku ini.' }}</p>
                   </div>
                   <div 
                     v-else 
-                    class="bg-gray-50 rounded-lg p-4 border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                    class="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
                     @click="toggleDescription"
                   >
                     <p class="text-gray-700 line-clamp-2 whitespace-pre-line text-justify">{{ book.deskripsi || 'Tidak ada deskripsi untuk buku ini.' }}</p>
-                    <p v-if="book.deskripsi && book.deskripsi.length > 100" class="text-blue-600 text-sm mt-1 flex items-center gap-1">
+                    <p v-if="book.deskripsi && book.deskripsi.length > 100" class="text-blue-600 text-sm mt-1 flex items-center gap-1 font-medium">
                       <span>Klik untuk melihat selengkapnya</span>
                       <ChevronDown class="h-4 w-4" />
                     </p>
@@ -359,32 +451,37 @@ const hasRegisterRoute = computed(() => {
               
               <!-- Action Buttons -->
               <div class="flex flex-wrap justify-between items-center">
-                <div class="flex flex-wrap gap-3">
-                  <button class="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors">
-                    <Share2 class="h-5 w-5" />
-                    Bagikan
-                  </button>
-                  
-                  <button class="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors">
-                    <Heart class="h-5 w-5" />
-                    Tambah ke Favorit
-                  </button>
+                <!-- Admin Button -->
+                <div v-if="isAdmin()" class="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
+                  <p class="text-blue-800 font-medium">Sebagai Admin Anda tidak dapat meminjam buku</p>
+                  <p class="text-blue-700 text-sm mt-1">Anda dapat mengelola buku ini melalui dashboard admin.</p>
                 </div>
                 
-                <div class="mt-3 sm:mt-0">
+                <!-- User Button - Logged In -->
+                <div v-else-if="isUser()" class="w-full">
+                  <div v-if="book.jumlah > 0" class="flex justify-end">
+                    <button 
+                      @click="handleBorrowBook"
+                      class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      :disabled="isLoading"
+                    >
+                      <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <BookOpen v-else class="h-5 w-5" />
+                      {{ isLoading ? 'Memproses...' : 'Pinjam Buku' }}
+                    </button>
+                  </div>
+                  <div v-else class="bg-red-50 border border-red-200 rounded-lg p-4 w-full">
+                    <p class="text-red-800 font-medium">Buku tidak tersedia untuk dipinjam</p>
+                    <p class="text-red-700 text-sm mt-1">Semua salinan buku ini sedang dipinjam. Silakan coba lagi nanti.</p>
+                  </div>
+                </div>
+                
+                <!-- User Button - Not Logged In -->
+                <div v-else class="w-full flex justify-center">
                   <Link 
-                    v-if="page.props.auth && page.props.auth.user && page.props.auth.user.role !== 'administrasi' && book.jumlah > 0"
-                    :href="route('loans.request', { book_id: book.id })"
-                    method="post"
-                    as="button"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    <BookOpen class="h-5 w-5" />
-                    Pinjam
-                  </Link>
-                  
-                  <Link 
-                    v-if="!page.props.auth || !page.props.auth.user"
                     :href="getLoginUrl()"
                     class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
@@ -414,6 +511,54 @@ const hasRegisterRoute = computed(() => {
         </div>
       </div>
     </main>
+    
+    <!-- Notification Modal -->
+    <transition name="fade">
+      <div v-if="showModal" class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="absolute inset-0 backdrop-blur-sm bg-white/30" @click="closeModal"></div>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 z-10 overflow-hidden">
+          <div 
+            class="p-5 flex items-center gap-4"
+            :class="modalStatus === 'success' ? 'bg-green-50' : 'bg-red-50'"
+          >
+            <div 
+              class="rounded-full p-3"
+              :class="modalStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
+            >
+              <CheckCircle v-if="modalStatus === 'success'" class="h-7 w-7" />
+              <AlertCircle v-else class="h-7 w-7" />
+            </div>
+            <h3 
+              class="text-xl font-bold"
+              :class="modalStatus === 'success' ? 'text-green-800' : 'text-red-800'"
+            >
+              {{ modalStatus === 'success' ? 'Berhasil' : 'Gagal' }}
+            </h3>
+          </div>
+          
+          <div class="p-6">
+            <p class="text-gray-700 mb-8 text-base leading-relaxed">{{ modalMessage }}</p>
+            
+            <div class="flex flex-wrap gap-3 justify-end">
+              <button 
+                @click="closeModal"
+                class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+              >
+                Tutup
+              </button>
+              
+              <button 
+                v-if="modalStatus === 'success'"
+                @click="navigateToBookshelf"
+                class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Lihat Rak Buku
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 

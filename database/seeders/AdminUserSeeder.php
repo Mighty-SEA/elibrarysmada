@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
             'email' => 'guru@perpus.com',
             'password' => Hash::make('password'),
             'role' => 'guru',
-        ]);
+        ]);  
 
         // Buat user murid
         User::create([

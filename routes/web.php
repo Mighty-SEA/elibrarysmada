@@ -51,10 +51,14 @@ Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(fun
     // Bookshelves route
     Route::get('/bookshelves', [BookshelvesController::class, 'index'])->name('bookshelves');
     
-    // User loans routes
-    Route::get('/loans', [LoanController::class, 'userLoans'])->name('loans.user');
-    Route::post('/loans/request', [LoanController::class, 'requestLoan'])->name('loans.request');
-    Route::delete('/loans/{loan}/cancel', [LoanController::class, 'cancelRequest'])->name('loans.cancel');
+    // Keep original route names but change the controller and paths
+    Route::post('/bookshelves/loans/request', [BookshelvesController::class, 'requestLoan'])->name('loans.request');
+    Route::delete('/bookshelves/loans/{loan}/cancel', [BookshelvesController::class, 'cancelRequest'])->name('loans.cancel');
+    
+    // Redirect from direct /loans path to /bookshelves for security
+    Route::get('/loans', function() {
+        return redirect()->route('bookshelves');
+    });
 });
 
 require __DIR__.'/settings.php';

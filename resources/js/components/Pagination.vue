@@ -27,7 +27,7 @@ function changePage(page: number) {
     if (props.onPageChange) {
       props.onPageChange(page);
     } else {
-      emit('pageChange', page);
+    emit('pageChange', page);
     }
   }
 }

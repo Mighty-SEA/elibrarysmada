@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, BookMarked, CheckCircle2, AlertTriangle, Clock, Calendar } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { BookOpen, BookMarked, CheckCircle2, AlertTriangle, Clock, Menu, X, Search, LogOut } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import type { SharedData } from '@/types';
 
 // Props
-const props = defineProps<{
+defineProps<{
   activeLoans: Array<{
     id: number;
     book_id: number;
@@ -111,12 +112,210 @@ const calculateDaysLeft = (dueDateString: string) => {
   
   return diffDays;
 };
+
+// Cek apakah rute register tersedia
+const hasRegisterRoute = computed(() => {
+  try {
+    return route().has('register');
+  } catch {
+    return false;
+  }
+});
+
+const page = usePage<SharedData>();
+const isMobileMenuOpen = ref(false);
+const isMobileSearchOpen = ref(false);
+
+// Fungsi untuk membuka dan menutup mobile menu
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+}
+
+// Fungsi untuk membuka dan menutup mobile search
+function toggleMobileSearch() {
+  isMobileSearchOpen.value = !isMobileSearchOpen.value;
+  if (isMobileSearchOpen.value) {
+    isMobileMenuOpen.value = false;
+  }
+}
+
+// Fungsi helper untuk cek admin
+function isAdmin() {
+  return page.props.auth?.user?.role === 'administrasi';
+}
+
+// Fungsi untuk mendapatkan login URL
+function getLoginUrl() {
+  try {
+    return route('login');
+  } catch {
+    return '/login';
+  }
+}
+
+// Fungsi untuk mendapatkan register URL
+function getRegisterUrl() {
+  try {
+    return route('register');
+  } catch {
+    return '/register';
+  }
+}
 </script>
 
 <template>
   <Head title="Rak Buku - E-Library SMADA" />
 
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Header/Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Logo & Menu Toggle -->
+          <div class="flex items-center">
+            <Link :href="route('home')" class="flex items-center gap-3">
+              <BookOpen class="h-8 w-8 text-blue-600" />
+              <div class="flex flex-col">
+                <div class="text-xl font-bold text-blue-700 tracking-wide">E - LIBRARY</div>
+                <div class="text-xs font-semibold text-blue-500 tracking-wider uppercase border-t border-blue-200 pt-0.5 mt-0.5">SMA PEMUDA BANJARAN</div>
+              </div>
+            </Link>
+          </div>
+          
+          <!-- Desktop Search Bar -->
+          <div class="flex-1 mx-6 max-w-xl hidden md:block">
+            <!-- Placeholder for search bar, can be replaced with SearchBar component if needed -->
+            <div class="relative rounded-lg border border-gray-300 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Search class="h-5 w-5 text-gray-400" />
+              </div>
+              <Link :href="route('home')" class="block w-full pl-10 pr-4 py-2 text-sm text-gray-500">
+                Cari buku di katalog...
+              </Link>
+            </div>
+          </div>
+          
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-4">
+            <template v-if="page.props.auth?.user">
+              <div class="mr-4 text-gray-700">
+                Halo, <span class="font-medium">{{ page.props.auth.user.name }}</span>
+              </div>
+              
+              <!-- Tombol Dashboard hanya untuk admin -->
+              <Link
+                v-if="isAdmin()"
+                :href="route('dashboard')"
+                class="inline-flex items-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+              >
+                Dashboard
+              </Link>
+              
+              <!-- Tombol Logout untuk murid dan guru -->
+              <Link
+                v-else
+                :href="route('logout')"
+                method="post"
+                as="button"
+                class="inline-flex items-center gap-2 rounded-md border border-red-600 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                <LogOut class="h-4 w-4" />
+                Logout
+              </Link>
+            </template>
+            
+            <template v-else>
+              <Link
+                :href="getLoginUrl()"
+                class="inline-block rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              >
+                Masuk
+              </Link>
+              <Link
+                v-if="hasRegisterRoute"
+                :href="getRegisterUrl()"
+                class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Daftar
+              </Link>
+            </template>
+          </div>
+          
+          <!-- Mobile Search & Menu Button -->
+          <div class="flex items-center gap-2 md:hidden">
+            <button @click="toggleMobileSearch" class="p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+              <Search class="h-6 w-6" />
+            </button>
+            <button 
+              @click="toggleMobileMenu" 
+              class="p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
+              <X v-else class="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Mobile Search Dropdown -->
+        <transition name="fade">
+          <div v-if="isMobileSearchOpen" class="md:hidden absolute left-0 right-0 top-full bg-white shadow-lg z-30 px-4 py-4 border-b border-gray-200">
+            <Link :href="route('home')" class="block w-full px-4 py-2 text-sm text-gray-500 border border-gray-300 rounded-lg">
+              Cari buku di katalog...
+            </Link>
+          </div>
+        </transition>
+        
+        <!-- Mobile Navigation Menu -->
+        <div 
+          v-if="isMobileMenuOpen" 
+          class="md:hidden mt-4 py-3 border-t border-gray-200 space-y-4"
+        >
+          <template v-if="page.props.auth?.user">
+            <div class="px-2 py-1 text-gray-700">
+              Halo, <span class="font-medium">{{ page.props.auth.user.name }}</span>
+            </div>
+            
+            <Link
+              v-if="isAdmin()"
+              :href="route('dashboard')"
+              class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md"
+            >
+              Dashboard
+            </Link>
+            
+            <Link
+              v-else
+              :href="route('logout')"
+              method="post"
+              as="button"
+              class="block px-2 py-2 text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
+            >
+              <LogOut class="h-5 w-5" />
+              Logout
+            </Link>
+          </template>
+          
+          <template v-else>
+            <div class="flex flex-col space-y-2">
+              <Link
+                :href="getLoginUrl()"
+                class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md"
+              >
+                Masuk
+              </Link>
+              <Link
+                v-if="hasRegisterRoute"
+                :href="getRegisterUrl()"
+                class="block px-2 py-2 text-blue-600 hover:bg-blue-50 rounded-md"
+              >
+                Daftar
+              </Link>
+            </div>
+          </template>
+        </div>
+      </div>
+    </header>
+
     <!-- Main Content - Rak Buku -->
     <main class="py-8">
       <div class="container mx-auto px-4">
@@ -349,4 +548,16 @@ const calculateDaysLeft = (dueDateString: string) => {
       </div>
     </main>
   </div>
-</template> 
+</template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style> 

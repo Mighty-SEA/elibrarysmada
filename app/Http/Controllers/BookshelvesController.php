@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Loan;
+use App\Models\Buku;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,5 +71,85 @@ class BookshelvesController extends Controller
             'activeLoans' => $formattedActiveLoans,
             'loanHistory' => $formattedLoanHistory,
         ]);
+    }
+    
+    /**
+     * Request to borrow a book
+     */
+    public function requestLoan(Request $request)
+    {
+        $request->validate([
+            'book_id' => 'required|exists:books,id',
+        ]);
+        
+        $user = Auth::user();
+        $book = Buku::find($request->book_id);
+        
+        // Check if book is available
+        if (!$book->isAvailable()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Buku tidak tersedia untuk dipinjam.'
+                ], 422);
+            }
+            
+            return redirect()->back()->with('error', 'Buku tidak tersedia untuk dipinjam.');
+        }
+        
+        // Check if user already has a pending or active loan for this book
+        $existingLoan = Loan::where('user_id', $user->id)
+            ->where('book_id', $book->id)
+            ->whereIn('status', ['belum_diambil', 'dipinjam', 'terlambat'])
+            ->first();
+            
+        if ($existingLoan) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah meminjam atau mengajukan peminjaman untuk buku ini.'
+                ], 422);
+            }
+            
+            return redirect()->back()->with('error', 'Anda sudah meminjam atau mengajukan peminjaman untuk buku ini.');
+        }
+        
+        // Create loan request
+        Loan::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'status' => 'belum_diambil',
+            'request_date' => Carbon::now(),
+        ]);
+        
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan peminjaman buku berhasil. Silakan ambil buku di perpustakaan.'
+            ]);
+        }
+        
+        return redirect()->route('bookshelves')->with('success', 'Permintaan peminjaman buku berhasil. Silakan ambil buku di perpustakaan.');
+    }
+    
+    /**
+     * Cancel a loan request
+     */
+    public function cancelRequest(Loan $loan)
+    {
+        // Check if the loan belongs to the user
+        if ($loan->user_id !== Auth::id()) {
+            return redirect()->route('bookshelves')->with('error', 'Anda tidak memiliki akses untuk membatalkan peminjaman ini.');
+        }
+        
+        // Check if the loan is in 'belum_diambil' status
+        if ($loan->status !== 'belum_diambil') {
+            return redirect()->route('bookshelves')->with('error', 'Status peminjaman tidak valid untuk dibatalkan.');
+        }
+        
+        // Delete the loan request
+        $loan->delete();
+        
+        return redirect()->route('bookshelves')->with('success', 'Permintaan peminjaman berhasil dibatalkan.');
     }
 } 
