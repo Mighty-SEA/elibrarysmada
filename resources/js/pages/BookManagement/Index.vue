@@ -353,7 +353,7 @@ function bulkUpdateJumlah() {
   
   isBulkProcessing.value = true;
   
-  axios.put(route('books.bulk-update-jumlah'), {
+  axios.post('/admin/books/bulk-update-jumlah', {
     ids: selectedBooks.value,
     jumlah: bulkJumlah.value
   }, {
