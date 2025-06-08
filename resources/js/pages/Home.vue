@@ -57,7 +57,7 @@ function getRegisterUrl() {
 </script>
 
 <template>
-  <Head title="MyPerpus - Perpustakaan Digital">
+  <Head title="E-Library SMADA- Perpustakaan Digital">
     <meta name="description" content="Perpustakaan digital dengan ribuan koleksi buku yang bisa kamu pinjam dengan mudah" />
   </Head>
 
@@ -68,9 +68,12 @@ function getRegisterUrl() {
         <div class="flex items-center justify-between">
           <!-- Logo & Menu Toggle -->
           <div class="flex items-center">
-            <Link :href="route('home')" class="flex items-center gap-2">
-              <BookOpen class="h-6 w-6 text-blue-600" />
-              <div class="text-2xl font-bold text-blue-600">MyPerpus</div>
+            <Link :href="route('home')" class="flex items-center gap-3">
+              <BookOpen class="h-8 w-8 text-blue-600" />
+              <div class="flex flex-col">
+                <div class="text-xl font-bold text-blue-700 tracking-wide">E - LIBRARY</div>
+                <div class="text-xs font-semibold text-blue-500 tracking-wider uppercase border-t border-blue-200 pt-0.5 mt-0.5">SMA PEMUDA BANJARAN</div>
+              </div>
             </Link>
           </div>
           
@@ -217,7 +220,7 @@ function getRegisterUrl() {
               <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -mb-12 -ml-12"></div>
               
               <div class="relative z-10 text-white">
-                <h1 class="text-2xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">Selamat Datang di MyPerpus</h1>
+                <h1 class="text-2xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">E - LIBRARY SMADA</h1>
                 <p class="text-sm md:text-xl opacity-90 mb-4 md:mb-6 max-w-xs md:max-w-2xl">
                   Jelajahi koleksi buku-buku berkualitas dan pinjam dengan mudah
                 </p>
@@ -260,7 +263,7 @@ function getRegisterUrl() {
                   <!-- Card Kategori -->
                   <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
-                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">10+</p>
+                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">100+</p>
                       <p class="text-gray-300 text-xs md:text-sm">Kategori</p>
                     </div>
                   </div>
