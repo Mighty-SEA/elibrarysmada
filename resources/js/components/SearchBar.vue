@@ -1,12 +1,53 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useEventBus } from '@/composables/useEventBus';
+import { router, usePage } from '@inertiajs/vue3';
 
+const page = usePage();
 const searchQuery = ref('');
+
+// Cek jika ada query pencarian dari server
+onMounted(() => {
+  const pageProps = page.props as any;
+  if (pageProps.searchQuery) {
+    searchQuery.value = pageProps.searchQuery;
+    // Jika ada query pencarian, langsung trigger pencarian
+    handleSearch(false);
+  }
+});
+
 const eventBus = useEventBus();
 
-function handleSearch() {
-  eventBus.emit('search', searchQuery.value);
+// Cek jika sedang berada di halaman detail buku
+const isBookDetailPage = window.location.pathname.includes('/book/');
+
+function handleSearch(navigate = true) {
+  if (isBookDetailPage && navigate) {
+    // Jika di halaman detail buku, redirect ke home dengan query pencarian
+    router.visit(route('home', { search: searchQuery.value }), {
+      preserveState: true,
+      only: ['books', 'searchQuery'],
+      onSuccess: () => {
+        // Setelah navigasi ke halaman home, emit event search untuk memulai pencarian
+        setTimeout(() => {
+          eventBus.emit('search', searchQuery.value);
+        }, 100);
+      }
+    });
+  } else {
+    // Update URL dengan query pencarian
+    if (navigate) {
+      router.get(route('home', { search: searchQuery.value }), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['books', 'searchQuery'],
+        replace: true,
+      });
+    }
+    
+    // Gunakan event bus untuk pencarian
+    eventBus.emit('search', searchQuery.value);
+  }
 }
 </script>
 
@@ -15,7 +56,7 @@ function handleSearch() {
     <div class="relative">
       <input
         v-model="searchQuery"
-        @keyup.enter="handleSearch"
+        @keyup.enter="handleSearch()"
         type="text"
         placeholder="Cari judul buku, penulis, atau kategori..."
         class="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -26,7 +67,7 @@ function handleSearch() {
         </svg>
       </div>
       <button
-        @click="handleSearch"
+        @click="handleSearch()"
         class="absolute right-2 top-1 bottom-1 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
       >
         Cari

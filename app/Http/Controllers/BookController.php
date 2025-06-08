@@ -166,8 +166,10 @@ class BookController extends Controller
         return Redirect::route('books.index')->with('success', 'Import data buku berhasil!');
     }
 
-    public function home()
+    public function home(Request $request)
     {
+        $query = $request->query('search', '');
+        
         $books = Buku::all()->map(function ($book) {
             if ($book->cover_type === 'url') {
                 $book->cover_url = $book->cover;
@@ -180,8 +182,10 @@ class BookController extends Controller
             $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
             return $book;
         });
-        return \Inertia\Inertia::render('Home', [
-            'books' => $books
+        
+        return Inertia::render('Home', [
+            'books' => $books,
+            'searchQuery' => $query,
         ]);
     }
 

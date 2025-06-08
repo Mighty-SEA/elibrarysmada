@@ -7,7 +7,11 @@ import Pagination from './Pagination.vue';
 import { useEventBus } from '@/composables/useEventBus';
 
 // Data buku dari prop
-const props = defineProps<{ books: any[] }>();
+const props = defineProps<{ 
+  books: any[];
+  initialSearchQuery?: string;
+}>();
+
 const allBooks = ref(Array.isArray(props.books) ? props.books : []);
 
 // Kategori buku dinamis dari data
@@ -19,7 +23,7 @@ if (props.books && props.books.length > 0) {
 }
 
 const selectedCategory = ref('Semua');
-const searchQuery = ref('');
+const searchQuery = ref(props.initialSearchQuery || '');
 const eventBus = useEventBus();
 const viewMode = ref<'grid' | 'list'>('grid');
 const selectedAvailability = ref<boolean | null>(null);

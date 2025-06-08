@@ -293,7 +293,10 @@ function getRegisterUrl() {
       <section id="katalog" class="py-8 md:py-12 snap-start scroll-mt-16">
         <div class="container mx-auto px-4">
           <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Katalog Buku</h2>
-          <BookCatalog :books="page.props.books || []" />
+          <BookCatalog 
+            :books="page.props.books || []" 
+            :initial-search-query="page.props.searchQuery || ''"
+          />
         </div>
       </section>
     </main>
