@@ -1,13 +1,13 @@
 <template>
   <Head title="Manajemen Buku" />
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex h-full flex-1 flex-col gap-4 p-4">
+    <div id="page-content" class="flex h-full flex-1 flex-col gap-4 p-4">
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Manajemen Buku</h1>
-        <div class="flex gap-2">
+        <h1 class="text-xl md:text-2xl font-bold">Manajemen Buku</h1>
+        <div class="flex flex-wrap gap-1 sm:gap-2">
           <Dialog>
             <DialogTrigger as-child>
-              <Button type="button">Import</Button>
+              <Button type="button" size="sm" class="text-xs sm:text-sm">Import</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -26,11 +26,11 @@
               </form>
             </DialogContent>
           </Dialog>
-          <Button type="button" @click="exportBooks">Export</Button>
+          <Button type="button" size="sm" class="text-xs sm:text-sm" @click="exportBooks">Export</Button>
           <Link :href="route('books.create')">
-            <Button>
-              <BookPlus class="mr-2 h-4 w-4" />
-              Tambah Buku
+            <Button size="sm" class="text-xs sm:text-sm">
+              <BookPlus class="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+              <span class="hidden sm:inline">Tambah</span> Buku
             </Button>
           </Link>
         </div>
@@ -103,7 +103,23 @@
         </div>
       </div>
       
-      <div class="rounded-md border">
+      <!-- Mobile scroll hint (only show on small screens) -->
+      <div class="sm:hidden text-xs text-gray-500 italic mb-2 px-2">
+        Geser ke kanan/kiri untuk melihat selengkapnya
+      </div>
+      
+      <div id="book-table" ref="tableRef" class="rounded-md border overflow-x-auto relative">
+        <!-- Loading overlay untuk tabel -->
+        <div 
+          v-if="isPageLoading" 
+          class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center"
+        >
+          <div class="flex flex-col items-center">
+            <LoaderCircle class="h-8 w-8 text-blue-600 animate-spin" />
+            <span class="text-sm text-gray-700 font-medium mt-2">Memuat...</span>
+          </div>
+        </div>
+        
         <Table>
           <TableHeader>
             <TableRow>
@@ -118,10 +134,10 @@
               </TableHead>
               <TableHead>Cover</TableHead>
               <TableHead>Judul</TableHead>
-              <TableHead>Penulis</TableHead>
-              <TableHead>Penerbit</TableHead>
-              <TableHead>Tahun</TableHead>
-              <TableHead>Kategori</TableHead>
+              <TableHead class="hidden sm:table-cell">Penulis</TableHead>
+              <TableHead class="hidden md:table-cell">Penerbit</TableHead>
+              <TableHead class="hidden md:table-cell">Tahun</TableHead>
+              <TableHead class="hidden lg:table-cell">Kategori</TableHead>
               <TableHead>Jumlah</TableHead>
               <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
@@ -141,10 +157,10 @@
                 <span v-else class="text-gray-400 italic">Tidak ada</span>
               </TableCell>
               <TableCell>{{ book.judul }}</TableCell>
-              <TableCell>{{ book.penulis }}</TableCell>
-              <TableCell>{{ book.penerbit }}</TableCell>
-              <TableCell>{{ book.tahun_terbit }}</TableCell>
-              <TableCell>{{ book.kategori }}</TableCell>
+              <TableCell class="hidden sm:table-cell">{{ book.penulis }}</TableCell>
+              <TableCell class="hidden md:table-cell">{{ book.penerbit }}</TableCell>
+              <TableCell class="hidden md:table-cell">{{ book.tahun_terbit }}</TableCell>
+              <TableCell class="hidden lg:table-cell">{{ book.kategori }}</TableCell>
               <TableCell>{{ book.jumlah }}</TableCell>
               <TableCell class="text-right">
                 <div class="flex justify-end space-x-2">
@@ -160,14 +176,14 @@
               </TableCell>
             </TableRow>
             <TableRow v-if="!props.books.data || props.books.data.length === 0">
-              <TableCell colspan="8" class="text-center py-6">Tidak ada data buku</TableCell>
+              <TableCell colspan="9" class="text-center py-6">Tidak ada data buku</TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </div>
       
       <!-- Pagination -->
-      <div v-if="props.books.last_page > 1" class="mt-4">
+      <div v-if="props.books.last_page > 1" class="px-2 sm:px-0 overflow-x-auto py-2">
         <Pagination 
           :current-page="props.books.current_page"
           :total-pages="props.books.last_page"
@@ -229,6 +245,8 @@ interface PaginatedBooks {
 }
 
 const props = defineProps<{ books: PaginatedBooks }>();
+const isPageLoading = ref(false);
+const tableRef = ref<HTMLElement | null>(null);
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -257,11 +275,16 @@ function exportBooks() {
   window.location.href = route('books.export');
 }
 
-// Tambahkan fungsi untuk pindah halaman
+// Fungsi untuk pindah halaman
 function changePage(page: number) {
+  isPageLoading.value = true;
+  
   router.get(route('books.index'), { page }, {
     preserveState: true,
-    preserveScroll: true
+    preserveScroll: true, // Gunakan true untuk mempertahankan posisi scroll saat ini
+    onFinish: () => {
+      isPageLoading.value = false;
+    }
   });
 }
 
@@ -375,4 +398,8 @@ function bulkUpdateJumlah() {
     isBulkProcessing.value = false;
   });
 }
-</script> 
+</script>
+
+<style scoped>
+/* Hapus kode yang tidak digunakan */
+</style> 

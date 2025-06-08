@@ -26,6 +26,7 @@ function handleSearch(navigate = true) {
     // Jika di halaman detail buku, redirect ke home dengan query pencarian
     router.visit(route('home', { search: searchQuery.value }), {
       preserveState: true,
+      preserveScroll: true, // Pastikan posisi scroll dipertahankan
       only: ['books', 'searchQuery'],
       onSuccess: () => {
         // Setelah navigasi ke halaman home, emit event search untuk memulai pencarian

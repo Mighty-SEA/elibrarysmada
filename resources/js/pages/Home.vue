@@ -2,7 +2,6 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
-import AppFooter from '@/components/AppFooter.vue';
 import { ShoppingCart, BookOpen, Menu, X, Search, UserPlus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
@@ -303,9 +302,6 @@ function getRegisterUrl() {
         </div>
       </section>
     </main>
-
-    <!-- Footer -->
-    <AppFooter />
   </div>
 </template>
 

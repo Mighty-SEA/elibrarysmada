@@ -2,7 +2,6 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, ShoppingCart, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import AppFooter from '@/components/AppFooter.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import BookCard from '@/components/BookCard.vue';
 
@@ -380,9 +379,6 @@ const hasRegisterRoute = computed(() => {
         </div>
       </div>
     </main>
-    
-    <!-- Footer -->
-    <AppFooter />
   </div>
 </template>
 

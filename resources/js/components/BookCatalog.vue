@@ -139,8 +139,8 @@ function handleViewChange(view: 'grid' | 'list') {
 
 function handlePageChange(page: number) {
   currentPage.value = page;
-  // Scroll ke atas halaman
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Hindari auto-scroll ke atas
+  // window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
