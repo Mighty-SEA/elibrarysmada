@@ -302,9 +302,9 @@ function selectAllBooks() {
     // Jika ID sudah tersedia, langsung pilih semua
     selectedBooks.value = [...allBookIds.value];
   } else {
-    // Ambil semua ID dari server
+    // Ambil semua ID dari server menggunakan URL absolut
     isLoadingAllIds.value = true;
-    fetch(route('books.all-ids'))
+    fetch('/api/books/all-ids')
       .then(response => response.json())
       .then(data => {
         allBookIds.value = data.ids;
@@ -314,6 +314,7 @@ function selectAllBooks() {
       .catch(error => {
         console.error('Error fetching all book IDs:', error);
         isLoadingAllIds.value = false;
+        alert('Gagal mengambil semua ID buku. Silakan coba lagi.');
       });
   }
 }
@@ -324,7 +325,7 @@ function bulkDelete() {
   
   isBulkProcessing.value = true;
   
-  axios.delete(route('books.bulk-delete'), {
+  axios.delete('/admin/books/bulk-delete', {
     data: {
       ids: selectedBooks.value
     },

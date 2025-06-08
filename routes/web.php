@@ -14,6 +14,9 @@ Route::get('/', [\App\Http\Controllers\BookController::class, 'home'])->name('ho
 // Book detail route
 Route::get('/book/{book}', [\App\Http\Controllers\BookController::class, 'detail'])->name('book.detail');
 
+// API routes that don't need authentication
+Route::get('/api/books/all-ids', [\App\Http\Controllers\BookController::class, 'getAllBookIds'])->name('api.books.all-ids');
+
 // Route untuk administrasi
 Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

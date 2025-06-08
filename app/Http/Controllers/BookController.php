@@ -262,7 +262,12 @@ class BookController extends Controller
 
     public function getAllBookIds()
     {
-        $ids = Buku::pluck('id');
-        return response()->json(['ids' => $ids]);
+        try {
+            $ids = Buku::pluck('id')->values()->toArray();
+            return response()->json(['ids' => $ids]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in getAllBookIds: ' . $e->getMessage());
+            return response()->json(['ids' => [], 'error' => 'Failed to retrieve book IDs'], 500);
+        }
     }
 } 
