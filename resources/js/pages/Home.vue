@@ -3,7 +3,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import BookCatalog from '@/components/BookCatalog.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import AppFooter from '@/components/AppFooter.vue';
-import { ShoppingCart, BookOpen, Menu, X } from 'lucide-vue-next';
+import { ShoppingCart, BookOpen, Menu, X, Search, UserPlus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
 // Cek apakah rute register tersedia
@@ -17,10 +17,19 @@ const hasRegisterRoute = computed(() => {
 
 const page = usePage();
 const isMobileMenuOpen = ref(false);
+const isMobileSearchOpen = ref(false);
 
 // Fungsi untuk membuka dan menutup mobile menu
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
+}
+
+// Fungsi untuk membuka dan menutup mobile search
+function toggleMobileSearch() {
+  isMobileSearchOpen.value = !isMobileSearchOpen.value;
+  if (isMobileSearchOpen.value) {
+    isMobileMenuOpen.value = false;
+  }
 }
 
 // Fungsi helper untuk cek admin
@@ -52,7 +61,7 @@ function getRegisterUrl() {
     <meta name="description" content="Perpustakaan digital dengan ribuan koleksi buku yang bisa kamu pinjam dengan mudah" />
   </Head>
 
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gray-50 flex flex-col snap-y snap-mandatory h-screen overflow-y-scroll relative">
     <!-- Header/Navigation -->
     <header class="bg-white shadow-sm sticky top-0 z-20">
       <div class="container mx-auto px-4 py-4">
@@ -114,20 +123,27 @@ function getRegisterUrl() {
             </template>
           </div>
           
-          <!-- Mobile Menu Button -->
-          <button 
-            @click="toggleMobileMenu" 
-            class="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
-            <X v-else class="h-6 w-6" />
-          </button>
+          <!-- Mobile Search & Menu Button -->
+          <div class="flex items-center gap-2 md:hidden">
+            <button @click="toggleMobileSearch" class="p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+              <Search class="h-6 w-6" />
+            </button>
+            <button 
+              @click="toggleMobileMenu" 
+              class="p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
+              <X v-else class="h-6 w-6" />
+            </button>
+          </div>
         </div>
         
-        <!-- Mobile Search Bar -->
-        <div class="md:hidden mt-4">
-          <SearchBar />
-        </div>
+        <!-- Mobile Search Dropdown -->
+        <transition name="fade">
+          <div v-if="isMobileSearchOpen" class="md:hidden absolute left-0 right-0 top-full bg-white shadow-lg z-30 px-4 py-4 border-b border-gray-200">
+            <SearchBar />
+          </div>
+        </transition>
         
         <!-- Mobile Navigation Menu -->
         <div 
@@ -179,7 +195,7 @@ function getRegisterUrl() {
     </header>
 
     <!-- Hero Section -->
-    <section class="py-12 md:py-20">
+    <section class="min-h-screen pt-16 flex items-center snap-start max-h-screen md:max-h-none">
       <div class="container mx-auto px-4">
         <div class="relative rounded-xl shadow-xl overflow-hidden border border-gray-300/20 transform transition-all hover:shadow-2xl">
           <!-- Background Image -->
@@ -194,72 +210,74 @@ function getRegisterUrl() {
           </div>
           
           <!-- Hero Content -->
-          <div class="relative z-10 flex flex-col min-h-[550px]">
+          <div class="relative z-10 flex flex-col flex-1">
             <div class="flex-grow flex flex-col justify-center items-start p-8 md:p-16 max-w-3xl">
               <!-- Decorative Elements -->
               <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mt-16 -mr-16"></div>
               <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -mb-12 -ml-12"></div>
               
               <div class="relative z-10 text-white">
-                <h1 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">Selamat Datang di MyPerpus</h1>
-                <p class="text-lg md:text-xl opacity-90 mb-6 max-w-2xl">
+                <h1 class="text-2xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">Selamat Datang di MyPerpus</h1>
+                <p class="text-sm md:text-xl opacity-90 mb-4 md:mb-6 max-w-xs md:max-w-2xl">
                   Jelajahi koleksi buku-buku berkualitas dan pinjam dengan mudah
                 </p>
-                <p class="text-sm md:text-base opacity-80 mb-10 max-w-xl">
+                <p class="text-xs md:text-base opacity-80 mb-6 md:mb-10 max-w-xs md:max-w-xl">
                   Temukan buku favoritmu dengan menggunakan filter kategori atau pencarian di atas
                 </p>
                 
-                <div class="flex flex-wrap gap-4">
+                <div class="flex flex-wrap gap-2 md:gap-4">
                   <a 
                     href="#katalog" 
-                    class="inline-flex items-center px-6 py-3 rounded-md bg-white text-gray-800 font-medium hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
+                    class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white shadow-lg ring-1 ring-blue-400/30 hover:from-blue-600 hover:to-indigo-700 hover:scale-105 hover:shadow-xl transition-all duration-200"
                   >
-                    Lihat Katalog
+                    <BookOpen class="w-5 h-5 md:w-6 md:h-6" />
+                    <span>Lihat Katalog</span>
                   </a>
                   <a 
                     v-if="!page.props.auth?.user"
                     :href="getRegisterUrl()"
-                    class="inline-flex items-center px-6 py-3 rounded-md bg-gray-900 text-white font-medium border border-white/30 hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                    class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-gradient-to-r from-white/10 to-white/0 border border-white/40 text-white shadow-lg ring-1 ring-white/20 hover:bg-white/10 hover:backdrop-blur-md hover:scale-105 hover:shadow-xl transition-all duration-200"
                   >
-                    Daftar Sekarang
+                    <UserPlus class="w-5 h-5 md:w-6 md:h-6" />
+                    <span>Daftar Sekarang</span>
                   </a>
                 </div>
               </div>
             </div>
             
             <!-- Statistik -->
-            <div class="relative w-full bg-black/40 backdrop-blur-sm py-8 border-t border-white/10">
-              <div class="container mx-auto px-4">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="relative w-full bg-black/40 backdrop-blur-sm py-4 md:py-8 border-t border-white/10">
+              <div class="container mx-auto px-2 md:px-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                   <!-- Card Jumlah Buku -->
-                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
-                      <p class="text-3xl font-bold text-white mb-1">{{ Array.isArray(page.props.books) ? page.props.books.length : 0 }}+</p>
-                      <p class="text-gray-300 text-sm">Jumlah Buku</p>
+                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">{{ Array.isArray(page.props.books) ? page.props.books.length : 0 }}+</p>
+                      <p class="text-gray-300 text-xs md:text-sm">Jumlah Buku</p>
                     </div>
                   </div>
                   
                   <!-- Card Kategori -->
-                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
-                      <p class="text-3xl font-bold text-white mb-1">10+</p>
-                      <p class="text-gray-300 text-sm">Kategori</p>
+                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">10+</p>
+                      <p class="text-gray-300 text-xs md:text-sm">Kategori</p>
                     </div>
                   </div>
                   
                   <!-- Card Akses Online -->
-                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
-                      <p class="text-3xl font-bold text-white mb-1">24/7</p>
-                      <p class="text-gray-300 text-sm">Akses Online</p>
+                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">24/7</p>
+                      <p class="text-gray-300 text-xs md:text-sm">Akses Online</p>
                     </div>
                   </div>
                   
                   <!-- Card Gratis -->
-                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                  <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
-                      <p class="text-3xl font-bold text-white mb-1">100%</p>
-                      <p class="text-gray-300 text-sm">Gratis</p>
+                      <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">100%</p>
+                      <p class="text-gray-300 text-xs md:text-sm">Gratis</p>
                     </div>
                   </div>
                 </div>
@@ -272,7 +290,7 @@ function getRegisterUrl() {
 
     <main class="flex-grow">
       <!-- Book Catalog -->
-      <section id="katalog" class="py-8 md:py-12">
+      <section id="katalog" class="py-8 md:py-12 snap-start scroll-mt-16">
         <div class="container mx-auto px-4">
           <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Katalog Buku</h2>
           <BookCatalog :books="page.props.books || []" />
@@ -332,5 +350,13 @@ p:nth-of-type(2) {
 
 .absolute:nth-of-type(2) {
   animation-delay: 2s;
+}
+
+/* Fade transition for mobile search dropdown */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style> 

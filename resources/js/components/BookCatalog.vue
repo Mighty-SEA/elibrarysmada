@@ -63,9 +63,9 @@ const filteredBooks = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(book => 
-      (book.judul || book.title).toLowerCase().includes(query) || 
-      (book.penulis || book.author).toLowerCase().includes(query) ||
-      (book.kategori || book.category).toLowerCase().includes(query)
+      ((book.judul ?? book.title ?? '') + '').toLowerCase().includes(query) || 
+      ((book.penulis ?? book.author ?? '') + '').toLowerCase().includes(query) ||
+      ((book.kategori ?? book.category ?? '') + '').toLowerCase().includes(query)
     );
   }
   
@@ -81,17 +81,17 @@ function sortBooks(books: any[]) {
     let valueA, valueB;
     
     if (sortField.value === 'title') {
-      valueA = (a.judul || a.title || '').toLowerCase();
-      valueB = (b.judul || b.title || '').toLowerCase();
+      valueA = ((a.judul ?? a.title ?? '') + '').toLowerCase();
+      valueB = ((b.judul ?? b.title ?? '') + '').toLowerCase();
     } else if (sortField.value === 'author') {
-      valueA = (a.penulis || a.author || '').toLowerCase();
-      valueB = (b.penulis || b.author || '').toLowerCase();
+      valueA = ((a.penulis ?? a.author ?? '') + '').toLowerCase();
+      valueB = ((b.penulis ?? b.author ?? '') + '').toLowerCase();
     } else if (sortField.value === 'category') {
-      valueA = (a.kategori || a.category || '').toLowerCase();
-      valueB = (b.kategori || b.category || '').toLowerCase();
+      valueA = ((a.kategori ?? a.category ?? '') + '').toLowerCase();
+      valueB = ((b.kategori ?? b.category ?? '') + '').toLowerCase();
     } else {
-      valueA = a[sortField.value] || '';
-      valueB = b[sortField.value] || '';
+      valueA = (a[sortField.value] ?? '') + '';
+      valueB = (b[sortField.value] ?? '') + '';
     }
     
     // Urutan ascending atau descending

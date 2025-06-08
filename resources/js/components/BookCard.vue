@@ -10,25 +10,27 @@
       </div>
     </div>
     <div class="p-4 flex-grow">
-      <div class="text-xs text-gray-500 mb-1">{{ category }}</div>
+      <div class="text-xs text-gray-500 mb-1">{{ category || '' }}</div>
       <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">{{ title }}</h3>
       <p class="text-sm text-gray-600">{{ author }}</p>
     </div>
     <div class="px-4 pb-4 mt-auto">
-      <router-link :to="'/book/' + id" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm transition-colors">
+      <Link :href="'/book/' + id" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm transition-colors">
         Detail Buku
-      </router-link>
+      </Link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
 defineProps<{
   id: number;
   title: string;
   author: string;
   coverImage: string;
-  category: string;
+  category?: string;
   available: boolean;
 }>();
 </script> 
