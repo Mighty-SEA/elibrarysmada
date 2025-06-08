@@ -1,43 +1,63 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
 const props = defineProps<{
-  currentPage: number;
-  totalPages: number;
+  links?: Array<{
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }>();
 
+// For backward compatibility
 const emit = defineEmits<{
   (e: 'pageChange', page: number): void;
 }>();
 
+// Determine if we're using the old or new pagination style
+const isUsingLaravelPagination = computed(() => props.links && props.links.length > 0);
+
+// For old pagination style
 function changePage(page: number) {
-  if (page >= 1 && page <= props.totalPages) {
-    emit('pageChange', page);
+  if (page >= 1 && page <= (props.totalPages || 1)) {
+    if (props.onPageChange) {
+      props.onPageChange(page);
+    } else {
+      emit('pageChange', page);
+    }
   }
 }
 
-// Menghitung halaman yang akan ditampilkan (maksimal 5 halaman untuk desktop, 3 untuk mobile)
+// Calculate page numbers for old pagination style
 const getPageNumbers = (isMobile = false) => {
+  if (!props.currentPage || !props.totalPages) return [];
+  
   const pages = [];
   const maxPagesToShow = isMobile ? 3 : 5;
   
   if (props.totalPages <= maxPagesToShow) {
-    // Jika total halaman <= max, tampilkan semua halaman
+    // If total pages <= max, show all pages
     for (let i = 1; i <= props.totalPages; i++) {
       pages.push(i);
     }
   } else {
-    // Jika total halaman > max, tampilkan halaman dengan logika khusus
+    // If total pages > max, show pages with special logic
     if (props.currentPage <= Math.ceil(maxPagesToShow / 2)) {
-      // Jika halaman saat ini di awal, tampilkan halaman 1 sampai maxPagesToShow
+      // If current page is at the beginning, show pages 1 to maxPagesToShow
       for (let i = 1; i <= maxPagesToShow; i++) {
         pages.push(i);
       }
     } else if (props.currentPage >= props.totalPages - Math.floor(maxPagesToShow / 2)) {
-      // Jika halaman saat ini mendekati akhir, tampilkan maxPagesToShow halaman terakhir
+      // If current page is near the end, show the last maxPagesToShow pages
       for (let i = props.totalPages - (maxPagesToShow - 1); i <= props.totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Tampilkan halaman dengan currentPage di tengah
+      // Show pages with currentPage in the middle
       const offset = Math.floor(maxPagesToShow / 2);
       for (let i = props.currentPage - offset; i <= props.currentPage + offset; i++) {
         pages.push(i);
@@ -50,10 +70,28 @@ const getPageNumbers = (isMobile = false) => {
 </script>
 
 <template>
-  <div class="flex justify-center mt-4 md:mt-8">
-    <!-- Desktop Pagination (tampilkan pada md dan di atasnya) -->
+  <!-- Laravel Pagination (new style) -->
+  <div v-if="isUsingLaravelPagination && links && links.length > 3" class="flex flex-wrap justify-center gap-1">
+    <template v-for="(link, index) in links" :key="index">
+      <!-- We need to use v-html here because Laravel pagination returns HTML entities -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div v-if="link.url === null" class="px-4 py-2 text-sm text-gray-500 rounded-md border border-gray-200 bg-gray-50" v-html="link.label"></div>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <Link
+        v-else
+        :href="link.url"
+        class="px-4 py-2 text-sm rounded-md border"
+        :class="link.active ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-700 bg-white border-gray-200 hover:bg-gray-50'"
+        v-html="link.label"
+      ></Link>
+    </template>
+  </div>
+
+  <!-- Old Pagination Style -->
+  <div v-else-if="currentPage !== undefined && totalPages !== undefined" class="flex justify-center mt-4 md:mt-8">
+    <!-- Desktop Pagination (show on md and above) -->
     <nav class="hidden md:flex items-center gap-1">
-      <!-- Tombol Previous -->
+      <!-- Previous Button -->
       <button 
         @click="changePage(currentPage - 1)" 
         :disabled="currentPage === 1"
@@ -65,7 +103,7 @@ const getPageNumbers = (isMobile = false) => {
         &laquo;
       </button>
       
-      <!-- Tombol halaman pertama jika tidak ditampilkan dalam range -->
+      <!-- First page button if not in range -->
       <button 
         v-if="getPageNumbers()[0] > 1" 
         @click="changePage(1)"
@@ -74,10 +112,10 @@ const getPageNumbers = (isMobile = false) => {
         1
       </button>
       
-      <!-- Ellipsis jika ada gap antara halaman pertama dan range yang ditampilkan -->
+      <!-- Ellipsis if gap between first page and displayed range -->
       <span v-if="getPageNumbers()[0] > 2" class="px-2 text-gray-700">...</span>
       
-      <!-- Tombol halaman -->
+      <!-- Page buttons -->
       <button 
         v-for="page in getPageNumbers()" 
         :key="page"
@@ -90,10 +128,10 @@ const getPageNumbers = (isMobile = false) => {
         {{ page }}
       </button>
       
-      <!-- Ellipsis jika ada gap antara range yang ditampilkan dan halaman terakhir -->
+      <!-- Ellipsis if gap between displayed range and last page -->
       <span v-if="getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1" class="px-2 text-gray-700">...</span>
       
-      <!-- Tombol halaman terakhir jika tidak ditampilkan dalam range -->
+      <!-- Last page button if not in range -->
       <button 
         v-if="getPageNumbers()[getPageNumbers().length - 1] < totalPages" 
         @click="changePage(totalPages)"
@@ -102,7 +140,7 @@ const getPageNumbers = (isMobile = false) => {
         {{ totalPages }}
       </button>
       
-      <!-- Tombol Next -->
+      <!-- Next Button -->
       <button 
         @click="changePage(currentPage + 1)" 
         :disabled="currentPage === totalPages"
@@ -115,9 +153,9 @@ const getPageNumbers = (isMobile = false) => {
       </button>
     </nav>
     
-    <!-- Mobile Pagination (tampilkan pada layar kecil) -->
+    <!-- Mobile Pagination (show on small screens) -->
     <nav class="flex md:hidden items-center shadow-sm rounded-md overflow-hidden">
-      <!-- Tombol Previous -->
+      <!-- Previous Button -->
       <button 
         @click="changePage(currentPage - 1)" 
         :disabled="currentPage === 1"
@@ -129,14 +167,14 @@ const getPageNumbers = (isMobile = false) => {
         &laquo;
       </button>
       
-      <!-- Tampilkan halaman saat ini dan total halaman -->
+      <!-- Show current page and total pages -->
       <div class="px-4 py-2 bg-white flex items-center justify-center min-w-[70px]">
         <span class="font-semibold text-blue-600 transition-all duration-200 transform scale-110">{{ currentPage }}</span>
         <span class="mx-1 text-gray-400">/</span>
         <span class="text-gray-700">{{ totalPages }}</span>
       </div>
       
-      <!-- Tombol Next -->
+      <!-- Next Button -->
       <button 
         @click="changePage(currentPage + 1)" 
         :disabled="currentPage === totalPages"

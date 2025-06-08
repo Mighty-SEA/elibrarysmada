@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, ShoppingCart, Users } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, ShoppingCart, Users, BookMarked, Clock } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -28,6 +28,21 @@ const adminNavItems: NavItem[] = [
         title: 'Manajemen Buku',
         href: '/admin/books',
         icon: BookOpen,
+    },
+    {
+        title: 'Peminjaman',
+        href: '/admin/loans',
+        icon: BookMarked,
+    },
+    {
+        title: 'Permintaan Baru',
+        href: '/admin/loans/pending',
+        icon: Clock,
+    },
+    {
+        title: 'Buku Dipinjam',
+        href: '/admin/loans/active',
+        icon: ShoppingCart,
     },
 ];
 

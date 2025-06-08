@@ -87,4 +87,24 @@ class User extends Authenticatable
     {
         return $this->role === 'murid';
     }
+
+    /**
+     * Get all loans for this user
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    /**
+     * Get active loans (belum_diambil, dipinjam, terlambat)
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function activeLoans()
+    {
+        return $this->loans()->whereIn('status', ['belum_diambil', 'dipinjam', 'terlambat']);
+    }
 }

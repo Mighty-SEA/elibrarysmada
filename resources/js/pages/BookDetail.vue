@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, ShoppingCart, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp, BookMarked } from 'lucide-vue-next';
+import { BookOpen, Tag, User, Building, Calendar, Hash, MapPin, Share2, Heart, ChevronLeft, Search, Menu, X, ChevronDown, ChevronUp, BookMarked } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import SearchBar from '@/components/SearchBar.vue';
 import BookCard from '@/components/BookCard.vue';
@@ -374,11 +374,13 @@ const hasRegisterRoute = computed(() => {
                 <div class="mt-3 sm:mt-0">
                   <Link 
                     v-if="page.props.auth && page.props.auth.user && page.props.auth.user.role !== 'administrasi' && book.jumlah > 0"
-                    :href="route('bookshelves')"
+                    :href="route('loans.request', { book_id: book.id })"
+                    method="post"
+                    as="button"
                     class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    <BookMarked class="h-5 w-5" />
-                    Tambahkan ke Rak Buku
+                    <BookOpen class="h-5 w-5" />
+                    Pinjam
                   </Link>
                   
                   <Link 
