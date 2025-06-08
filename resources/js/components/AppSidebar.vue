@@ -5,12 +5,14 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, ShoppingCart, Users, BookMarked, Clock } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, ShoppingCart, Users, BookMarked, Clock } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
 // Mendapatkan data user dari Inertia
-const user = computed(() => usePage().props.auth.user);
+const page = usePage();
+// @ts-expect-error: Ignoring type check for usePage props
+const userRole = computed(() => page.props.auth?.user?.role);
 
 // Menu untuk administrasi
 const adminNavItems: NavItem[] = [
@@ -57,7 +59,7 @@ const userNavItems: NavItem[] = [
 
 // Menentukan menu yang akan ditampilkan berdasarkan role
 const mainNavItems = computed<NavItem[]>(() => {
-    if (user.value?.role === 'administrasi') {
+    if (userRole.value === 'administrasi') {
         return adminNavItems;
     } else {
         return userNavItems;
@@ -66,23 +68,18 @@ const mainNavItems = computed<NavItem[]>(() => {
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'Perpustakaan Digital',
+        href: '/',
         icon: BookOpen,
-    },
+    }
 ];
 
 // Menentukan route home berdasarkan role
-const homeRoute = computed(() => {
-    if (user.value?.role === 'administrasi') {
-        return route('dashboard');
+const homeRoute = computed<string>(() => {
+    if (userRole.value === 'administrasi') {
+        return '/admin/dashboard';
     } else {
-        return route('home');
+        return '/';
     }
 });
 </script>
