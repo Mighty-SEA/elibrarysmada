@@ -69,7 +69,7 @@ function getRegisterUrl() {
           <!-- Logo & Menu Toggle -->
           <div class="flex items-center">
             <Link :href="route('home')" class="flex items-center gap-3">
-              <BookOpen class="h-8 w-8 text-blue-600" />
+              <img src="/android-chrome-512x512.png" alt="Logo" class="h-12 w-12" />
               <div class="flex flex-col">
                 <div class="text-xl font-bold text-blue-700 tracking-wide">E - LIBRARY</div>
                 <div class="text-xs font-semibold text-blue-500 tracking-wider uppercase border-t border-blue-200 pt-0.5 mt-0.5">SMA PEMUDA BANJARAN</div>
