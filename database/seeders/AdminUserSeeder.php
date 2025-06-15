@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
         // Buat user administrasi
         User::create([
             'name' => 'ELista Berlian Tina',
-            'email' => 'elista@myperpus.com',
+            'username' => 'elista',
             'password' => Hash::make('password'),
             'role' => 'administrasi',
         ]);
@@ -24,7 +24,7 @@ class AdminUserSeeder extends Seeder
         // Buat user guru
         User::create([
             'name' => 'Guru Bahasa',
-            'email' => 'guru@perpus.com',
+            'username' => 'guru@perpus.com',
             'password' => Hash::make('password'),
             'role' => 'guru',
         ]);  
@@ -32,7 +32,7 @@ class AdminUserSeeder extends Seeder
         // Buat user murid
         User::create([
             'name' => 'Murid Teladan',
-            'email' => 'murid@perpus.com',
+            'username' => 'murid@perpus.com',
             'password' => Hash::make('password'),
             'role' => 'murid',
         ]);

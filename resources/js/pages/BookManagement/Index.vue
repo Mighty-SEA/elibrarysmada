@@ -132,6 +132,7 @@
                   :disabled="!props.books.data || props.books.data.length === 0"
                 />
               </TableHead>
+              <TableHead class="w-12">No</TableHead>
               <TableHead>Cover</TableHead>
               <TableHead>Judul</TableHead>
               <TableHead class="hidden sm:table-cell">Penulis</TableHead>
@@ -143,7 +144,7 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="book in props.books.data" :key="book.id">
+            <TableRow v-for="(book, idx) in props.books.data" :key="book.id">
               <TableCell>
                 <input 
                   type="checkbox" 
@@ -152,6 +153,7 @@
                   class="h-4 w-4 rounded border-gray-300"
                 />
               </TableCell>
+              <TableCell>{{ idx + 1 + ((props.books.current_page - 1) * props.books.per_page) }}</TableCell>
               <TableCell>
                 <img v-if="book.cover_url" :src="book.cover_url" alt="Cover" class="w-12 h-16 object-cover rounded shadow" />
                 <span v-else class="text-gray-400 italic">Tidak ada</span>
@@ -176,7 +178,7 @@
               </TableCell>
             </TableRow>
             <TableRow v-if="!props.books.data || props.books.data.length === 0">
-              <TableCell colspan="9" class="text-center py-6">Tidak ada data buku</TableCell>
+              <TableCell colspan="10" class="text-center py-6">Tidak ada data buku</TableCell>
             </TableRow>
           </TableBody>
         </Table>

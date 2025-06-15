@@ -85,79 +85,92 @@ function submit() {
       </div>
       <div class="rounded-md border p-6">
         <form @submit.prevent="submit" class="flex flex-col gap-6" enctype="multipart/form-data">
-          <div class="grid gap-2">
-            <Label for="judul">Judul <span class="text-red-500">*</span></Label>
-            <Input id="judul" v-model="form.judul" required autofocus />
-            <InputError :message="form.errors.judul" class="mt-2" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div class="grid gap-2">
+                <Label for="judul">Judul <span class="text-red-500">*</span></Label>
+                <Input id="judul" v-model="form.judul" required autofocus />
+                <InputError :message="form.errors.judul" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="penulis">Penulis</Label>
+                <Input id="penulis" v-model="form.penulis" />
+                <InputError :message="form.errors.penulis" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="penerbit">Penerbit</Label>
+                <Input id="penerbit" v-model="form.penerbit" />
+                <InputError :message="form.errors.penerbit" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="tahun_terbit">Tahun Terbit</Label>
+                <Input id="tahun_terbit" v-model="form.tahun_terbit" type="number" />
+                <InputError :message="form.errors.tahun_terbit" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="isbn">ISBN</Label>
+                <Input id="isbn" v-model="form.isbn" />
+                <InputError :message="form.errors.isbn" class="mt-2" />
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="grid gap-2">
+                <Label for="jumlah">Jumlah</Label>
+                <Input id="jumlah" v-model="form.jumlah" type="number" />
+                <InputError :message="form.errors.jumlah" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="lokasi">Lokasi</Label>
+                <Input id="lokasi" v-model="form.lokasi" />
+                <InputError :message="form.errors.lokasi" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="deskripsi">Deskripsi</Label>
+                <Input id="deskripsi" v-model="form.deskripsi" />
+                <InputError :message="form.errors.deskripsi" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="kategori">Kategori</Label>
+                <Input id="kategori" v-model="form.kategori" />
+                <InputError :message="form.errors.kategori" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="cover_type">Tipe Cover</Label>
+                <select id="cover_type" v-model="form.cover_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                  <option value="upload">Upload</option>
+                  <option value="url">URL</option>
+                </select>
+                <InputError :message="form.errors.cover_type" class="mt-2" />
+              </div>
+            </div>
           </div>
-          <div class="grid gap-2">
-            <Label for="penulis">Penulis</Label>
-            <Input id="penulis" v-model="form.penulis" />
-            <InputError :message="form.errors.penulis" class="mt-2" />
+          
+          <div class="mt-4">
+            <div class="grid gap-2" v-if="form.cover_type === 'upload'">
+              <Label for="cover">Cover Buku</Label>
+              <Input id="cover" type="file" accept="image/*" @change="handleCoverChange" />
+              <InputError :message="form.errors.cover" class="mt-2" />
+              <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
+            </div>
+            <div class="grid gap-2" v-else>
+              <Label for="cover_url">Link Cover Buku</Label>
+              <Input id="cover_url" type="text" v-model="form.cover" />
+              <InputError :message="form.errors.cover" class="mt-2" />
+              <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
+            </div>
           </div>
-          <div class="grid gap-2">
-            <Label for="penerbit">Penerbit</Label>
-            <Input id="penerbit" v-model="form.penerbit" />
-            <InputError :message="form.errors.penerbit" class="mt-2" />
+          
+          <div class="flex flex-col gap-2 mt-6">
+            <Button type="submit" :disabled="form.processing" class="w-full flex items-center justify-center">
+              <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
+              <Save v-else class="mr-2 h-4 w-4" />
+              Simpan
+            </Button>
+            <Link :href="route('books.index')">
+              <Button type="button" variant="outline" class="w-full mt-2">Batal</Button>
+            </Link>
           </div>
-          <div class="grid gap-2">
-            <Label for="tahun_terbit">Tahun Terbit</Label>
-            <Input id="tahun_terbit" v-model="form.tahun_terbit" type="number" />
-            <InputError :message="form.errors.tahun_terbit" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="isbn">ISBN</Label>
-            <Input id="isbn" v-model="form.isbn" />
-            <InputError :message="form.errors.isbn" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="jumlah">Jumlah</Label>
-            <Input id="jumlah" v-model="form.jumlah" type="number" />
-            <InputError :message="form.errors.jumlah" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="lokasi">Lokasi</Label>
-            <Input id="lokasi" v-model="form.lokasi" />
-            <InputError :message="form.errors.lokasi" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="deskripsi">Deskripsi</Label>
-            <Input id="deskripsi" v-model="form.deskripsi" />
-            <InputError :message="form.errors.deskripsi" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="kategori">Kategori</Label>
-            <Input id="kategori" v-model="form.kategori" />
-            <InputError :message="form.errors.kategori" class="mt-2" />
-          </div>
-          <div class="grid gap-2">
-            <Label for="cover_type">Tipe Cover</Label>
-            <select id="cover_type" v-model="form.cover_type">
-              <option value="upload">Upload</option>
-              <option value="url">URL</option>
-            </select>
-            <InputError :message="form.errors.cover_type" class="mt-2" />
-          </div>
-          <div class="grid gap-2" v-if="form.cover_type === 'upload'">
-            <Label for="cover">Cover Buku</Label>
-            <Input id="cover" type="file" accept="image/*" @change="handleCoverChange" />
-            <InputError :message="form.errors.cover" class="mt-2" />
-            <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
-          </div>
-          <div class="grid gap-2" v-else>
-            <Label for="cover_url">Link Cover Buku</Label>
-            <Input id="cover_url" type="text" v-model="form.cover" />
-            <InputError :message="form.errors.cover" class="mt-2" />
-            <img v-if="coverPreview" :src="coverPreview" alt="Preview Cover" class="mt-2 max-h-40 rounded" />
-          </div>
-          <Button type="submit" :disabled="form.processing" class="mt-4 w-full flex items-center justify-center">
-            <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
-            <Save v-else class="mr-2 h-4 w-4" />
-            Simpan
-          </Button>
-          <Link :href="route('books.index')">
-            <Button type="button" variant="outline" class="w-full mt-2">Batal</Button>
-          </Link>
         </form>
       </div>
     </div>

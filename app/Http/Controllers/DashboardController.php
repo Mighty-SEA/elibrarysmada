@@ -22,7 +22,7 @@ class DashboardController extends Controller
 
         $bookQuery = Buku::query();
         $loanQuery = Loan::query();
-        $userQuery = User::query();
+        $userQuery = User::query()->where('role', '!=', 'administrasi');
         $pendingQuery = Loan::where('status', 'belum_diambil');
 
         if ($start) {

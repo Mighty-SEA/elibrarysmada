@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class UserManagementController extends Controller
@@ -17,7 +17,7 @@ class UserManagementController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::orderBy('name')->paginate(10);
         
         return Inertia::render('UserManagement/Index', [
             'users' => $users
@@ -44,18 +44,21 @@ class UserManagementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'username' => 'required|string|max:255|unique:users,username',
+            'password' => ['required', 'confirmed', Password::defaults()],
             'role' => 'required|in:administrasi,guru,murid',
+            'jenis_kelamin' => 'nullable|string|max:20',
+            'jurusan' => 'nullable|string|max:100',
+            'nomor_telepon' => 'nullable|string|max:20',
+            'foto_profil' => 'nullable|image|max:2048',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
-
+        $data = $request->only(['name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
+        $data['password'] = Hash::make($request->password);
+        if ($request->hasFile('foto_profil')) {
+            $data['foto_profil'] = $request->file('foto_profil')->store('profile_photos', 'public');
+        }
+        User::create($data);
         return to_route('user-management.index')->with('message', 'User berhasil ditambahkan');
     }
 
@@ -68,7 +71,7 @@ class UserManagementController extends Controller
     public function edit(User $user)
     {
         return Inertia::render('UserManagement/Edit', [
-            'user' => $user->only(['id', 'name', 'email', 'role'])
+            'user' => $user->only(['id', 'name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon', 'foto_profil'])
         ]);
     }
 
@@ -83,27 +86,24 @@ class UserManagementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,'.$user->id,
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'role' => 'required|in:administrasi,guru,murid',
+            'jenis_kelamin' => 'nullable|string|max:20',
+            'jurusan' => 'nullable|string|max:100',
+            'nomor_telepon' => 'nullable|string|max:20',
+            'foto_profil' => 'nullable|image|max:2048',
         ]);
-
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-        ];
-
-        // Update password jika diisi
+        $data = $request->only(['name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
         if ($request->filled('password')) {
             $request->validate([
-                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'password' => ['required', 'confirmed', Password::defaults()],
             ]);
-            
             $data['password'] = Hash::make($request->password);
         }
-
+        if ($request->hasFile('foto_profil')) {
+            $data['foto_profil'] = $request->file('foto_profil')->store('profile_photos', 'public');
+        }
         $user->update($data);
-
         return to_route('user-management.index')->with('message', 'User berhasil diperbarui');
     }
 

@@ -14,7 +14,7 @@ defineProps<{
 }>();
 
 const form = useForm({
-    email: '',
+    username: '',
     password: '',
     remember: false,
 });
@@ -42,19 +42,19 @@ const submit = () => {
             </div>
             <div class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="username">Username</Label>
                     <Input
-                        id="email"
-                        type="email"
+                        id="username"
+                        type="text"
                         required
                         autofocus
                         :tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
+                        autocomplete="username"
+                        v-model="form.username"
+                        placeholder="username"
                         class="rounded-lg border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-blue-50/40"
                     />
-                    <InputError :message="form.errors.email" />
+                    <InputError :message="form.errors.username" />
                 </div>
 
                 <div class="grid gap-2">
