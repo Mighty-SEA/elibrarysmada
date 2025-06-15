@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('cover')->nullable();
             $table->enum('cover_type', ['upload', 'url'])->default('upload');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
