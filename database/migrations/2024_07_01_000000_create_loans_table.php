@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('user_id', 10);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
             $table->enum('status', ['belum_diambil', 'dipinjam', 'terlambat', 'dikembalikan'])->default('belum_diambil');
             $table->dateTime('request_date');
             $table->dateTime('approval_date')->nullable();
-            $table->foreignId('approval_by')->nullable()->constrained('users');
+            $table->string('approval_by', 10)->nullable();
+            $table->foreign('approval_by')->references('id')->on('users')->onDelete('set null');
             $table->dateTime('due_date')->nullable();
             $table->dateTime('return_date')->nullable();
             $table->decimal('fine_amount', 10, 2)->nullable();

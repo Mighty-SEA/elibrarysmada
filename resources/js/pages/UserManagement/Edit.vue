@@ -17,6 +17,7 @@ interface User {
     jurusan?: string;
     nomor_telepon?: string;
     foto_profil?: string;
+    tahun_angkatan?: number;
 }
 
 const props = defineProps<{ user: User }>();
@@ -34,6 +35,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     role: props.user.role || '',
+    tahun_angkatan: props.user.tahun_angkatan || new Date().getFullYear(),
     jenis_kelamin: props.user.jenis_kelamin || '',
     jurusan: props.user.jurusan || '',
     nomor_telepon: props.user.nomor_telepon || '',
@@ -95,6 +97,12 @@ const submit = () => {
                                   <option value="murid">Murid</option>
                                 </select>
                                 <InputError :message="form.errors.role" class="mt-2" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="tahun_angkatan">Tahun Angkatan</Label>
+                                <Input id="tahun_angkatan" v-model="form.tahun_angkatan" type="number" min="2000" max="2100" required class="mt-1 block w-full" />
+                                <small class="text-yellow-600">Perubahan tahun angkatan akan mengubah ID user</small>
+                                <InputError :message="form.errors.tahun_angkatan" class="mt-2" />
                             </div>
                         </div>
                         

@@ -30,6 +30,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     role: '',
+    tahun_angkatan: new Date().getFullYear(),
     jenis_kelamin: '',
     jurusan: '',
     nomor_telepon: '',
@@ -100,6 +101,11 @@ const submit = () => {
                                   <option value="murid">Murid</option>
                                 </select>
                                 <InputError :message="form.errors.role" class="mt-2" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="tahun_angkatan">Tahun Angkatan</Label>
+                                <Input id="tahun_angkatan" v-model="form.tahun_angkatan" type="number" min="2000" max="2100" required class="mt-1 block w-full" />
+                                <InputError :message="form.errors.tahun_angkatan" class="mt-2" />
                             </div>
                         </div>
                         

@@ -13,11 +13,26 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The data type of the auto-incrementing ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'id',
         'name',
         'username',
         'password',
@@ -26,6 +41,7 @@ class User extends Authenticatable
         'jurusan',
         'nomor_telepon',
         'foto_profil',
+        'tahun_angkatan',
     ];
 
     /**

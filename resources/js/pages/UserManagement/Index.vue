@@ -44,7 +44,7 @@ const roleLabels = computed(() => {
         'administrasi': 'Administrator',
         'guru': 'Guru',
         'murid': 'Murid'
-    };
+    } as {[key: string]: string};
 });
 
 const deleteUser = (id: number) => {
@@ -74,6 +74,7 @@ const deleteUser = (id: number) => {
                     <TableHeader>
                         <TableRow>
                             <TableHead class="w-12">No</TableHead>
+                            <TableHead>ID</TableHead>
                             <TableHead>Foto</TableHead>
                             <TableHead>Nama</TableHead>
                             <TableHead>Username</TableHead>
@@ -87,6 +88,7 @@ const deleteUser = (id: number) => {
                     <TableBody>
                         <TableRow v-for="(user, idx) in users.data" :key="user.id">
                             <TableCell>{{ idx + 1 + ((users.current_page - 1) * users.per_page) }}</TableCell>
+                            <TableCell>{{ user.id }}</TableCell>
                             <TableCell>
                                 <img v-if="user.foto_profil" :src="'/storage/' + user.foto_profil" alt="Foto Profil" class="h-10 w-10 rounded-full object-cover border" />
                                 <span v-else class="text-gray-400 italic">-</span>
