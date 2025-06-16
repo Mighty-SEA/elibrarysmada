@@ -4,6 +4,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import { LayoutGrid, Book, BookOpen, Users, BookMarked, Clock, CheckCircle2, AlertTriangle, Calendar } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { BarChart } from 'vue-chart-3';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,6 +25,64 @@ const booksDeleted = page.props.booksDeleted as number | null;
 
 const startDate = ref(page.props.startDate || '');
 const endDate = ref(page.props.endDate || '');
+
+const loanChart = page.props.loanChart || {};
+const userChart = page.props.userChart || {};
+
+const chartOptions = {
+    responsive: true,
+    plugins: {
+        legend: { display: false }
+    },
+    scales: {
+        y: {
+            ticks: {
+                callback: function(value: number) {
+                    if (Number.isInteger(value)) {
+                        return value;
+                    }
+                    return '';
+                },
+                stepSize: 1,
+            },
+            beginAtZero: true,
+            precision: 0,
+        }
+    }
+};
+
+function formatLabel(label: string) {
+    // Pisahkan label menjadi [jenis_kelamin, jurusan]
+    const [jk, ...jurusanArr] = label.split(' ');
+    const jkLabel = jk === '-' ? 'Tidak Diketahui' : (jk === 'Laki-laki' ? 'L' : (jk === 'Perempuan' ? 'P' : jk));
+    const jurusanLabel = jurusanArr.join(' ') === '-' ? 'Tidak Diketahui' : jurusanArr.join(' ');
+    return jurusanLabel + ' - ' + jkLabel;
+}
+
+const loanChartLabels = Object.keys(loanChart).map(formatLabel);
+const userChartLabels = Object.keys(userChart).map(formatLabel);
+
+const loanChartData = {
+    labels: loanChartLabels,
+    datasets: [
+        {
+            label: 'Jumlah Peminjam',
+            data: Object.values(loanChart).map(v => parseInt(v)),
+            backgroundColor: '#2563eb',
+        },
+    ],
+};
+
+const userChartData = {
+    labels: userChartLabels,
+    datasets: [
+        {
+            label: 'Jumlah User',
+            data: Object.values(userChart).map(v => parseInt(v)),
+            backgroundColor: '#f59e42',
+        },
+    ],
+};
 
 function filterByDate() {
     router.get(route('dashboard'), {
@@ -141,6 +202,20 @@ function resetDateFilter() {
                     </div>
                     <p class="text-3xl font-bold text-gray-900">{{ totalUsers }}</p>
                     <p class="text-sm text-gray-500 mt-2">Terdaftar di sistem</p>
+                </div>
+            </div>
+
+            <!-- HANYA 2 CHART UTAMA -->
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+                <!-- Card Chart 1 -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                    <h2 class="text-lg font-semibold mb-2">Peminjam per Jurusan & Jenis Kelamin</h2>
+                    <BarChart :chartData="loanChartData" :options="chartOptions" style="width:100%;max-width:500px" />
+                </div>
+                <!-- Card Chart 2 -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                    <h2 class="text-lg font-semibold mb-2">User per Jurusan & Jenis Kelamin</h2>
+                    <BarChart :chartData="userChartData" :options="chartOptions" style="width:100%;max-width:500px" />
                 </div>
             </div>
             

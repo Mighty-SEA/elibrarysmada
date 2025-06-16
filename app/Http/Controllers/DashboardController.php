@@ -39,10 +39,14 @@ class DashboardController extends Controller
             $userQuery->whereDate('created_at', '<=', $end);
         }
 
+        // Query Loan dan User sudah difilter tanggal, gunakan untuk statistik dan chart
+        $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with('user')->get();
+        $users = $userQuery->get();
+
         $totalBooks = $bookQuery->count();
-        $totalLoans = $loanQuery->count();
+        $totalLoans = $loans->count();
         $pendingRequests = $pendingQuery->count();
-        $totalUsers = $userQuery->count();
+        $totalUsers = $users->count();
 
         // Hitung buku yang ditambah dan dihapus pada rentang tanggal
         $booksAdded = null;
@@ -62,6 +66,29 @@ class DashboardController extends Controller
             $booksDeleted = $deletedQuery->count();
         }
 
+        // Data chart 1: peminjam per jurusan+jenis_kelamin
+        $loanChart = $loans
+            ->groupBy(function($loan) {
+                $jk = $loan->user->jenis_kelamin ?? '-';
+                $jurusan = $loan->user->jurusan ?? '-';
+                return trim($jk . ' ' . $jurusan);
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
+        // Data chart 2: user per jurusan+jenis_kelamin (hanya murid)
+        $userChart = $users
+            ->where('role', 'murid')
+            ->groupBy(function($user) {
+                $jk = $user->jenis_kelamin ?? '-';
+                $jurusan = $user->jurusan ?? '-';
+                return trim($jk . ' ' . $jurusan);
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
         return Inertia::render('Dashboard', [
             'totalBooks' => $totalBooks,
             'totalLoans' => $totalLoans,
@@ -71,6 +98,8 @@ class DashboardController extends Controller
             'endDate' => $end,
             'booksAdded' => $booksAdded,
             'booksDeleted' => $booksDeleted,
+            'loanChart' => $loanChart,
+            'userChart' => $userChart,
         ]);
     }
 }
