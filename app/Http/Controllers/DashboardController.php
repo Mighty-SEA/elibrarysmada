@@ -102,4 +102,68 @@ class DashboardController extends Controller
             'userChart' => $userChart,
         ]);
     }
+
+    public function export(Request $request)
+    {
+        $start = $request->query('start');
+        $end = $request->query('end');
+
+        $bookQuery = Buku::query();
+        $loanQuery = Loan::query();
+        $userQuery = User::query()->where('role', '!=', 'administrasi');
+        $pendingQuery = Loan::where('status', 'belum_diambil');
+
+        if ($start) {
+            $loanQuery->whereDate('created_at', '>=', $start);
+            $pendingQuery->whereDate('created_at', '>=', $start);
+            $userQuery->whereDate('created_at', '>=', $start);
+        }
+        if ($end) {
+            $loanQuery->whereDate('created_at', '<=', $end);
+            $pendingQuery->whereDate('created_at', '<=', $end);
+            $userQuery->whereDate('created_at', '<=', $end);
+        }
+
+        $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with(['user', 'book'])->get();
+        $users = $userQuery->get();
+
+        $totalBooks = $bookQuery->count();
+        $totalLoans = $loans->count();
+        $pendingRequests = $pendingQuery->count();
+        $totalUsers = $users->count();
+
+        $loanChart = $loans
+            ->groupBy(function($loan) {
+                $jk = $loan->user->jenis_kelamin ?? '-';
+                $jurusan = $loan->user->jurusan ?? '-';
+                return trim($jk . ' ' . $jurusan);
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
+        $userChart = $users
+            ->where('role', 'murid')
+            ->groupBy(function($user) {
+                $jk = $user->jenis_kelamin ?? '-';
+                $jurusan = $user->jurusan ?? '-';
+                return trim($jk . ' ' . $jurusan);
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
+        return Inertia::render('DashboardExport', [
+            'totalBooks' => $totalBooks,
+            'totalLoans' => $totalLoans,
+            'pendingRequests' => $pendingRequests,
+            'totalUsers' => $totalUsers,
+            'loanChart' => $loanChart,
+            'userChart' => $userChart,
+            'loans' => $loans,
+            'users' => $users,
+            'startDate' => $start,
+            'endDate' => $end,
+        ]);
+    }
 }

@@ -21,6 +21,7 @@ Route::get('/api/books/all-ids', [\App\Http\Controllers\BookController::class, '
 // Route untuk administrasi
 Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
     
     // Route manajemen user
     Route::resource('user-management', UserManagementController::class)->parameters([

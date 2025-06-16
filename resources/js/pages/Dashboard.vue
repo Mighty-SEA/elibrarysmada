@@ -6,6 +6,7 @@ import { LayoutGrid, Book, BookOpen, Users, BookMarked, Clock, CheckCircle2, Ale
 import { ref, onMounted, watch } from 'vue';
 import { BarChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
+
 Chart.register(...registerables);
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -112,6 +113,15 @@ function resetDateFilter() {
     localStorage.removeItem('dashboard_endDate');
     router.get(route('dashboard'));
 }
+
+function exportPDF() {
+    // Kirim filter tanggal ke halaman export
+    const params = [];
+    if (startDate.value) params.push(`start=${encodeURIComponent(startDate.value)}`);
+    if (endDate.value) params.push(`end=${encodeURIComponent(endDate.value)}`);
+    const url = params.length > 0 ? `${route('dashboard.export')}?${params.join('&')}` : route('dashboard.export');
+    window.open(url, '_blank');
+}
 </script>
 
 <template>
@@ -119,119 +129,126 @@ function resetDateFilter() {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
-            <h1 class="text-2xl font-bold text-gray-900 mb-4">Dashboard Administrasi</h1>
-            
-            <!-- Filter Tanggal -->
-            <div class="flex flex-wrap items-center gap-2 mb-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 shadow-sm">
-                <div class="flex-1 flex items-center gap-3">
-                    <Calendar class="h-5 w-5 text-blue-600" />
-                    <span class="font-medium text-blue-800">Filter Data:</span>
-                </div>
-                
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">Dari:</span>
-                        <input 
-                            type="date" 
-                            v-model="startDate" 
-                            class="border border-blue-200 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white shadow-sm" 
-                        />
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard Administrasi</h1>
+                <button @click="exportPDF" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 transition">
+                    Export PDF
+                </button>
+            </div>
+            <!-- Area yang akan di-export ke PDF -->
+            <div id="dashboard-export-area">
+                <!-- Filter Tanggal -->
+                <div class="flex flex-wrap items-center gap-2 mb-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 shadow-sm">
+                    <div class="flex-1 flex items-center gap-3">
+                        <Calendar class="h-5 w-5 text-blue-600" />
+                        <span class="font-medium text-blue-800">Filter Data:</span>
                     </div>
                     
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">Sampai:</span>
-                        <input 
-                            type="date" 
-                            v-model="endDate" 
-                            class="border border-blue-200 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white shadow-sm" 
-                        />
-                    </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <button 
-                            @click="filterByDate" 
-                            class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1.5 text-sm font-medium transition shadow-sm"
-                        >
-                            <span>Terapkan Filter</span>
-                        </button>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-600 whitespace-nowrap">Dari:</span>
+                            <input 
+                                type="date" 
+                                v-model="startDate" 
+                                class="border border-blue-200 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white shadow-sm" 
+                            />
+                        </div>
                         
-                        <button 
-                            @click="resetDateFilter" 
-                            class="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded px-3 py-1.5 text-sm font-medium transition shadow-sm border border-gray-300"
-                        >
-                            <span>Reset</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-600 whitespace-nowrap">Sampai:</span>
+                            <input 
+                                type="date" 
+                                v-model="endDate" 
+                                class="border border-blue-200 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 bg-white shadow-sm" 
+                            />
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <button 
+                                @click="filterByDate" 
+                                class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1.5 text-sm font-medium transition shadow-sm"
+                            >
+                                <span>Terapkan Filter</span>
+                            </button>
+                            
+                            <button 
+                                @click="resetDateFilter" 
+                                class="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded px-3 py-1.5 text-sm font-medium transition shadow-sm border border-gray-300"
+                            >
+                                <span>Reset</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Stats Cards -->
-            <div class="grid gap-4 grid-cols-1 md:grid-cols-4">
-                <!-- Total Buku -->
-                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-medium text-gray-700">Total Buku</h3>
-                        <Book class="h-6 w-6 text-blue-500" />
-                    </div>
-                    <p class="text-3xl font-bold text-gray-900">{{ totalBooks }}</p>
-                    <p class="text-sm text-gray-500 mt-2">Tersedia di perpustakaan</p>
-                    <template v-if="startDate || endDate">
-                        <p class="text-xs mt-1 text-gray-600">
-                            <span v-if="booksAdded !== null">+ {{ booksAdded }} buku ditambah</span>
-                            <span v-if="booksDeleted !== null && booksDeleted > 0">, - {{ booksDeleted }} buku dihapus</span>
-                        </p>
-                    </template>
                 </div>
                 
-                <!-- Total Peminjaman -->
-                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-medium text-gray-700">Total Peminjaman</h3>
-                        <BookOpen class="h-6 w-6 text-green-500" />
-                    </div>
-                    <p class="text-3xl font-bold text-gray-900">{{ totalLoans }}</p>
-                    <p class="text-sm text-gray-500 mt-2">
+                <!-- Stats Cards -->
+                <div class="grid gap-4 grid-cols-1 md:grid-cols-4">
+                    <!-- Total Buku -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-medium text-gray-700">Total Buku</h3>
+                            <Book class="h-6 w-6 text-blue-500" />
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">{{ totalBooks }}</p>
+                        <p class="text-sm text-gray-500 mt-2">Tersedia di perpustakaan</p>
                         <template v-if="startDate || endDate">
-                            Peminjaman pada rentang tanggal
+                            <p class="text-xs mt-1 text-gray-600">
+                                <span v-if="booksAdded !== null">+ {{ booksAdded }} buku ditambah</span>
+                                <span v-if="booksDeleted !== null && booksDeleted > 0">, - {{ booksDeleted }} buku dihapus</span>
+                            </p>
                         </template>
-                        <template v-else>
-                            Total peminjaman
-                        </template>
-                    </p>
-                </div>
-                
-                <!-- Menunggu Persetujuan -->
-                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-medium text-gray-700">Permintaan Baru</h3>
-                        <Clock class="h-6 w-6 text-yellow-500" />
                     </div>
-                    <p class="text-3xl font-bold text-gray-900">{{ pendingRequests }}</p>
-                    <p class="text-sm text-gray-500 mt-2">Menunggu persetujuan</p>
-                </div>
-                
-                <!-- Total Pengguna -->
-                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-medium text-gray-700">Total Pengguna</h3>
-                        <Users class="h-6 w-6 text-purple-500" />
+                    
+                    <!-- Total Peminjaman -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-medium text-gray-700">Total Peminjaman</h3>
+                            <BookOpen class="h-6 w-6 text-green-500" />
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">{{ totalLoans }}</p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            <template v-if="startDate || endDate">
+                                Peminjaman pada rentang tanggal
+                            </template>
+                            <template v-else>
+                                Total peminjaman
+                            </template>
+                        </p>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900">{{ totalUsers }}</p>
-                    <p class="text-sm text-gray-500 mt-2">Terdaftar di sistem</p>
+                    
+                    <!-- Menunggu Persetujuan -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-medium text-gray-700">Permintaan Baru</h3>
+                            <Clock class="h-6 w-6 text-yellow-500" />
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">{{ pendingRequests }}</p>
+                        <p class="text-sm text-gray-500 mt-2">Menunggu persetujuan</p>
+                    </div>
+                    
+                    <!-- Total Pengguna -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-medium text-gray-700">Total Pengguna</h3>
+                            <Users class="h-6 w-6 text-purple-500" />
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">{{ totalUsers }}</p>
+                        <p class="text-sm text-gray-500 mt-2">Terdaftar di sistem</p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- HANYA 2 CHART UTAMA -->
-            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-                <!-- Card Chart 1 -->
-                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                    <h2 class="text-lg font-semibold mb-2">Peminjam</h2>
-                    <BarChart :chartData="loanChartData" :options="chartOptions" style="width:100%;max-width:500px" />
-                </div>
-                <!-- Card Chart 2 -->
-                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                    <h2 class="text-lg font-semibold mb-2">Anggota</h2>
-                    <BarChart :chartData="userChartData" :options="chartOptions" style="width:100%;max-width:500px" />
+                <!-- HANYA 2 CHART UTAMA -->
+                <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+                    <!-- Card Chart 1 -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                        <h2 class="text-lg font-semibold mb-2">Peminjam</h2>
+                        <BarChart :chartData="loanChartData" :options="chartOptions" style="width:100%;max-width:500px" />
+                    </div>
+                    <!-- Card Chart 2 -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                        <h2 class="text-lg font-semibold mb-2">Anggota</h2>
+                        <BarChart :chartData="userChartData" :options="chartOptions" style="width:100%;max-width:500px" />
+                    </div>
                 </div>
             </div>
             
