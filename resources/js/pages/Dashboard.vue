@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import { LayoutGrid, Book, BookOpen, Users, BookMarked, Clock, CheckCircle2, AlertTriangle, Calendar } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { BarChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
@@ -25,6 +25,20 @@ const booksDeleted = page.props.booksDeleted as number | null;
 
 const startDate = ref(page.props.startDate || '');
 const endDate = ref(page.props.endDate || '');
+
+// Ambil filter dari localStorage saat halaman dibuka
+onMounted(() => {
+    const savedStart = localStorage.getItem('dashboard_startDate');
+    const savedEnd = localStorage.getItem('dashboard_endDate');
+    if (savedStart !== null) startDate.value = savedStart;
+    if (savedEnd !== null) endDate.value = savedEnd;
+});
+
+// Simpan filter ke localStorage setiap kali berubah
+watch([startDate, endDate], ([newStart, newEnd]) => {
+    localStorage.setItem('dashboard_startDate', newStart);
+    localStorage.setItem('dashboard_endDate', newEnd);
+});
 
 const loanChart = page.props.loanChart || {};
 const userChart = page.props.userChart || {};
@@ -94,6 +108,8 @@ function filterByDate() {
 function resetDateFilter() {
     startDate.value = '';
     endDate.value = '';
+    localStorage.removeItem('dashboard_startDate');
+    localStorage.removeItem('dashboard_endDate');
     router.get(route('dashboard'));
 }
 </script>
@@ -209,12 +225,12 @@ function resetDateFilter() {
             <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
                 <!-- Card Chart 1 -->
                 <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                    <h2 class="text-lg font-semibold mb-2">Peminjam per Jurusan & Jenis Kelamin</h2>
+                    <h2 class="text-lg font-semibold mb-2">Peminjam</h2>
                     <BarChart :chartData="loanChartData" :options="chartOptions" style="width:100%;max-width:500px" />
                 </div>
                 <!-- Card Chart 2 -->
                 <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                    <h2 class="text-lg font-semibold mb-2">User per Jurusan & Jenis Kelamin</h2>
+                    <h2 class="text-lg font-semibold mb-2">Anggota</h2>
                     <BarChart :chartData="userChartData" :options="chartOptions" style="width:100%;max-width:500px" />
                 </div>
             </div>

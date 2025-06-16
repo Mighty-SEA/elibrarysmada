@@ -23,12 +23,27 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        static $urut;
+        $tahun = 2025;
+        if ($urut === null) {
+            $last = \App\Models\User::where('id', 'like', $tahun . '%')->orderBy('id', 'desc')->first();
+            if ($last) {
+                $urut = intval(substr($last->id, 4)) + 1;
+            } else {
+                $urut = 1;
+            }
+        }
+        $id = $tahun . str_pad($urut++, 3, '0', STR_PAD_LEFT);
+
         return [
+            'id' => $id,
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'role' => 'murid',
+            'jenis_kelamin' => fake()->randomElement(['Laki-laki', 'Perempuan']),
+            'jurusan' => fake()->randomElement(['IPA', 'IPS', 'Bahasa']),
+            'tahun_angkatan' => $tahun,
         ];
     }
 
