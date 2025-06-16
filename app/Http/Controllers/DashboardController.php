@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Models\Buku;
 use App\Models\Loan;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {

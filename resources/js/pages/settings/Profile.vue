@@ -30,7 +30,7 @@ const user = page.props.auth.user as User;
 
 const form = useForm({
     name: user.name,
-    email: user.email,
+    username: user.username,
 });
 
 const submit = () => {
@@ -46,7 +46,7 @@ const submit = () => {
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title="Profile information" description="Update your name and username" />
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid gap-2">
@@ -56,17 +56,17 @@ const submit = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="username">Username</Label>
                         <Input
-                            id="email"
-                            type="email"
+                            id="username"
+                            type="text"
                             class="mt-1 block w-full"
-                            v-model="form.email"
+                            v-model="form.username"
                             required
                             autocomplete="username"
-                            placeholder="Email address"
+                            placeholder="Username"
                         />
-                        <InputError class="mt-2" :message="form.errors.email" />
+                        <InputError class="mt-2" :message="form.errors.username" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at">

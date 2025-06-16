@@ -304,7 +304,7 @@ class LoanController extends Controller
         // Get all users except administrators
         $users = User::where('role', '!=', 'administrasi')
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'role']);
+            ->get(['id', 'name', 'username', 'role']);
             
         // Get all available books
         $books = Buku::where('ketersediaan', '>', 0)

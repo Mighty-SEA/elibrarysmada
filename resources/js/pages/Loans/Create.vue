@@ -9,7 +9,7 @@ const props = defineProps<{
   users: Array<{
     id: number;
     name: string;
-    email: string;
+    username: string;
     role: string;
   }>;
   books: Array<{
@@ -54,7 +54,7 @@ const filteredUsers = () => {
   const query = userSearchQuery.value.toLowerCase();
   return props.users.filter(user => 
     user.name.toLowerCase().includes(query) || 
-    user.email.toLowerCase().includes(query)
+    user.username.toLowerCase().includes(query)
   );
 };
 
@@ -145,7 +145,7 @@ const getRoleInIndonesian = (role: string) => {
                 <input
                   v-model="userSearchQuery"
                   type="text"
-                  placeholder="Cari pengguna berdasarkan nama atau email..."
+                  placeholder="Cari pengguna berdasarkan nama atau username..."
                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -176,7 +176,7 @@ const getRoleInIndonesian = (role: string) => {
                       <div class="ml-3">
                         <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
                         <div class="flex items-center text-xs text-gray-500 mt-1 space-x-2">
-                          <span>{{ user.email }}</span>
+                          <span>{{ user.username }}</span>
                           <span>•</span>
                           <span class="px-1.5 py-0.5 bg-gray-100 rounded-full">{{ getRoleInIndonesian(user.role) }}</span>
                         </div>
