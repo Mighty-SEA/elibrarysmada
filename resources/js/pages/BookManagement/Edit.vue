@@ -23,8 +23,11 @@ const form = useForm({
   penerbit: props.book.penerbit ?? '',
   tahun_terbit: props.book.tahun_terbit ?? '',
   isbn: props.book.isbn ?? '',
-  jumlah: props.book.jumlah ?? '',
-  lokasi: props.book.lokasi ?? '',
+  eksemplar: props.book.eksemplar ?? '',
+  ketersediaan: props.book.ketersediaan ?? '',
+  no_panggil: props.book.no_panggil ?? '',
+  asal_koleksi: props.book.asal_koleksi ?? '',
+  kota_terbit: props.book.kota_terbit ?? '',
   deskripsi: props.book.deskripsi ?? '',
   kategori: props.book.kategori ?? '',
   cover: props.book.cover_type === 'url' ? props.book.cover : null,
@@ -62,8 +65,11 @@ form.transform(data => ({
   penerbit: form.penerbit ?? props.book.penerbit ?? '',
   tahun_terbit: form.tahun_terbit ?? props.book.tahun_terbit ?? '',
   isbn: form.isbn ?? props.book.isbn ?? '',
-  jumlah: form.jumlah ?? props.book.jumlah ?? '',
-  lokasi: form.lokasi ?? props.book.lokasi ?? '',
+  eksemplar: form.eksemplar ?? props.book.eksemplar ?? '',
+  ketersediaan: form.ketersediaan ?? props.book.ketersediaan ?? '',
+  no_panggil: form.no_panggil ?? props.book.no_panggil ?? '',
+  asal_koleksi: form.asal_koleksi ?? props.book.asal_koleksi ?? '',
+  kota_terbit: form.kota_terbit ?? props.book.kota_terbit ?? '',
   deskripsi: form.deskripsi ?? props.book.deskripsi ?? '',
   kategori: form.kategori ?? props.book.kategori ?? '',
 }));
@@ -112,18 +118,33 @@ function submit() {
                 <Input id="isbn" v-model="form.isbn" />
                 <InputError :message="form.errors.isbn" class="mt-2" />
               </div>
+              <div class="grid gap-2">
+                <Label for="eksemplar">Ekselampar</Label>
+                <Input id="eksemplar" v-model="form.eksemplar" type="number" />
+                <InputError :message="form.errors.eksemplar" class="mt-2" />
+              </div>
             </div>
             
             <div class="space-y-4">
               <div class="grid gap-2">
-                <Label for="jumlah">Jumlah</Label>
-                <Input id="jumlah" v-model="form.jumlah" type="number" />
-                <InputError :message="form.errors.jumlah" class="mt-2" />
+                <Label for="ketersediaan">Ketersediaan</Label>
+                <Input id="ketersediaan" v-model="form.ketersediaan" />
+                <InputError :message="form.errors.ketersediaan" class="mt-2" />
               </div>
               <div class="grid gap-2">
-                <Label for="lokasi">Lokasi</Label>
-                <Input id="lokasi" v-model="form.lokasi" />
-                <InputError :message="form.errors.lokasi" class="mt-2" />
+                <Label for="no_panggil">No. Panggil</Label>
+                <Input id="no_panggil" v-model="form.no_panggil" />
+                <InputError :message="form.errors.no_panggil" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="asal_koleksi">Asal Koleksi</Label>
+                <Input id="asal_koleksi" v-model="form.asal_koleksi" />
+                <InputError :message="form.errors.asal_koleksi" class="mt-2" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="kota_terbit">Kota Terbit</Label>
+                <Input id="kota_terbit" v-model="form.kota_terbit" />
+                <InputError :message="form.errors.kota_terbit" class="mt-2" />
               </div>
               <div class="grid gap-2">
                 <Label for="deskripsi">Deskripsi</Label>

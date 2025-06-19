@@ -464,15 +464,15 @@ const hasRegisterRoute = computed(() => {
                     <li class="flex items-start gap-2">
                       <BookOpen class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <span class="text-sm font-medium text-gray-700">Stok Buku</span>
+                        <span class="text-sm font-medium text-gray-700">Eksemplar Buku</span>
                         <p class="text-gray-800">
-                          <span>Total: <span class="font-medium">{{ book.jumlah || 0 }}</span> buku</span>
+                          <span>Total: <span class="font-medium">{{ book.eksemplar || 0 }}</span> buku</span>
                           <span class="mx-1">•</span>
                           <span>Tersedia: <span 
                             :class="book.ketersediaan > 0 ? 'font-medium text-green-700' : 'font-medium text-red-600'"
                           >{{ book.ketersediaan || 0 }}</span> buku</span>
                         </p>
-                        <p v-if="book.jumlah > book.ketersediaan" class="text-xs text-gray-600 mt-1">
+                        <p v-if="book.eksemplar > book.ketersediaan" class="text-xs text-gray-600 mt-1">
                           <span v-if="book.pending_loans_count > 0">
                             {{ book.pending_loans_count }} orang belum mengambil buku
                           </span>
@@ -576,7 +576,7 @@ const hasRegisterRoute = computed(() => {
               :author="relatedBook.penulis"
               :coverImage="relatedBook.cover_url"
               :category="relatedBook.kategori_list && relatedBook.kategori_list.length > 0 ? relatedBook.kategori_list[0] : ''"
-              :available="relatedBook.jumlah > 0"
+              :available="relatedBook.eksemplar > 0"
             />
           </div>
         </div>

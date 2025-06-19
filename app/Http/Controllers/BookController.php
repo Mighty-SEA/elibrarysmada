@@ -48,8 +48,11 @@ class BookController extends Controller
             'penerbit' => 'nullable',
             'tahun_terbit' => 'nullable',
             'isbn' => 'nullable',
-            'jumlah' => 'nullable|integer',
-            'lokasi' => 'nullable',
+            'eksemplar' => 'nullable|integer',
+            'ketersediaan' => 'nullable|integer',
+            'no_panggil' => 'nullable',
+            'asal_koleksi' => 'nullable',
+            'kota_terbit' => 'nullable',
             'deskripsi' => 'nullable',
             'kategori' => 'nullable',
             'cover_type' => 'required|in:upload,url',
@@ -78,7 +81,7 @@ class BookController extends Controller
         $validated['cover_type'] = $request->cover_type;
         
         // Set ketersediaan to match jumlah
-        $validated['ketersediaan'] = $validated['jumlah'];
+        $validated['ketersediaan'] = $validated['eksemplar'];
         
         \App\Models\Buku::create($validated);
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan.');
@@ -110,9 +113,11 @@ class BookController extends Controller
             'penerbit' => 'nullable',
             'tahun_terbit' => 'nullable',
             'isbn' => 'nullable',
-            'jumlah' => 'nullable|integer',
+            'eksemplar' => 'nullable|integer',
             'ketersediaan' => 'nullable|integer',
-            'lokasi' => 'nullable',
+            'no_panggil' => 'nullable',
+            'asal_koleksi' => 'nullable',
+            'kota_terbit' => 'nullable',
             'deskripsi' => 'nullable',
             'kategori' => 'nullable',
             'cover_type' => 'required|in:upload,url',
@@ -148,9 +153,9 @@ class BookController extends Controller
         
         // Make sure ketersediaan doesn't exceed jumlah
         if (!isset($validated['ketersediaan'])) {
-            $validated['ketersediaan'] = $validated['jumlah'];
-        } else if ($validated['ketersediaan'] > $validated['jumlah']) {
-            $validated['ketersediaan'] = $validated['jumlah'];
+            $validated['ketersediaan'] = $validated['eksemplar'];
+        } else if ($validated['ketersediaan'] > $validated['eksemplar']) {
+            $validated['ketersediaan'] = $validated['eksemplar'];
         }
         
         $book->update($validated);
@@ -163,10 +168,15 @@ class BookController extends Controller
         return redirect()->route('books.index')->with('success', 'Buku berhasil dihapus.');
     }
 
-    public function export()
+    public function exportBooks()
     {
-        $fileName = 'buku_export_' . date('Ymd_His') . '.xlsx';
-        return Excel::download(new \App\Exports\BooksExport, $fileName);
+        try {
+            $fileName = 'buku_export_' . date('Ymd_His') . '.xlsx';
+            return Excel::download(new \App\Exports\BooksExport, $fileName);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error exporting books: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengekspor buku: ' . $e->getMessage());
+        }
     }
 
     public function import(Request $request)
@@ -266,18 +276,18 @@ class BookController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:books,id',
-            'jumlah' => 'required|integer|min:0'
+            'eksemplar' => 'required|integer|min:0'
         ]);
         
         $count = Buku::whereIn('id', $request->ids)->count();
         Buku::whereIn('id', $request->ids)->update([
-            'jumlah' => $request->jumlah,
-            'ketersediaan' => $request->jumlah
+            'eksemplar' => $request->eksemplar,
+            'ketersediaan' => $request->eksemplar
         ]);
         
         return response()->json([
             'success' => true,
-            'message' => 'Jumlah ' . $count . ' buku berhasil diperbarui.'
+            'message' => 'Ekselampar ' . $count . ' buku berhasil diperbarui.'
         ]);
     }
 

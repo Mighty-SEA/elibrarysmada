@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with('user')->get();
         $users = $userQuery->get();
 
-        $totalBooks = $bookQuery->count();
+        $totalBooks = $bookQuery->sum('eksemplar');
         $totalLoans = $loans->count();
         $pendingRequests = $pendingQuery->count();
         $totalUsers = $users->count();
@@ -127,7 +127,7 @@ class DashboardController extends Controller
         $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with(['user', 'book'])->get();
         $users = $userQuery->get();
 
-        $totalBooks = $bookQuery->count();
+        $totalBooks = $bookQuery->sum('eksemplar');
         $totalLoans = $loans->count();
         $pendingRequests = $pendingQuery->count();
         $totalUsers = $users->count();

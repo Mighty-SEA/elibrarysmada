@@ -51,19 +51,19 @@
           <Dialog>
             <DialogTrigger as-child>
               <Button size="sm" variant="secondary">
-                Update Jumlah
+                Update Eksemplar
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Update Jumlah Buku</DialogTitle>
-                <DialogDescription>Set jumlah untuk {{ selectedBooks.length }} buku yang dipilih.</DialogDescription>
+                <DialogTitle>Update Eksemplar Buku</DialogTitle>
+                <DialogDescription>Set eksemplar untuk {{ selectedBooks.length }} buku yang dipilih.</DialogDescription>
               </DialogHeader>
-              <form @submit.prevent="bulkUpdateJumlah">
+              <form @submit.prevent="bulkUpdateEksemplar">
                 <div class="grid gap-4 py-4">
                   <div class="grid gap-2">
-                    <Label for="jumlah">Jumlah Buku</Label>
-                    <Input id="jumlah" type="number" v-model="bulkJumlah" min="0" required />
+                    <Label for="eksemplar">Ekselampar</Label>
+                    <Input id="eksemplar" type="number" v-model="bulkEsemplar" min="0" required />
                   </div>
                 </div>
                 <DialogFooter>
@@ -139,6 +139,10 @@
               <TableHead class="hidden md:table-cell">Penerbit</TableHead>
               <TableHead class="hidden md:table-cell">Tahun</TableHead>
               <TableHead class="hidden lg:table-cell">Kategori</TableHead>
+              <TableHead>No. Panggil</TableHead>
+              <TableHead>Asal Koleksi</TableHead>
+              <TableHead>Kota Terbit</TableHead>
+              <TableHead>Eksemplar</TableHead>
               <TableHead>Jumlah</TableHead>
               <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
@@ -163,6 +167,10 @@
               <TableCell class="hidden md:table-cell">{{ book.penerbit }}</TableCell>
               <TableCell class="hidden md:table-cell">{{ book.tahun_terbit }}</TableCell>
               <TableCell class="hidden lg:table-cell">{{ book.kategori }}</TableCell>
+              <TableCell>{{ book.no_panggil }}</TableCell>
+              <TableCell>{{ book.asal_koleksi }}</TableCell>
+              <TableCell>{{ book.kota_terbit }}</TableCell>
+              <TableCell>{{ book.eksemplar }}</TableCell>
               <TableCell>{{ book.jumlah }}</TableCell>
               <TableCell class="text-right">
                 <div class="flex justify-end space-x-2">
@@ -274,7 +282,7 @@ if (meta) {
 }
 
 function exportBooks() {
-  window.location.href = route('books.export');
+  window.location.href = "/admin/export-books";
 }
 
 // Fungsi untuk pindah halaman
@@ -293,7 +301,7 @@ function changePage(page: number) {
 // Bulk actions state
 const selectedBooks = ref<number[]>([]);
 const confirmBulkDelete = ref(false);
-const bulkJumlah = ref<number>(1);
+const bulkEsemplar = ref<number>(1);
 const isBulkProcessing = ref(false);
 const isLoadingAllIds = ref(false);
 const allBookIds = ref<number[]>([]);
@@ -373,15 +381,15 @@ function bulkDelete() {
   });
 }
 
-// Bulk update jumlah
-function bulkUpdateJumlah() {
+// Bulk update eksemplar
+function bulkUpdateEksemplar() {
   if (selectedBooks.value.length === 0) return;
   
   isBulkProcessing.value = true;
   
-  axios.post('/admin/books/bulk-update-jumlah', {
+  axios.post('/admin/books/bulk-update-eksemplar', {
     ids: selectedBooks.value,
-    jumlah: bulkJumlah.value
+    eksemplar: bulkEsemplar.value
   }, {
     headers: {
       'X-CSRF-TOKEN': csrf
@@ -394,7 +402,7 @@ function bulkUpdateJumlah() {
   })
   .catch(error => {
     console.error('Error updating book quantity:', error);
-    alert('Gagal mengupdate jumlah buku. Silakan coba lagi.');
+    alert('Gagal mengupdate eksemplar buku. Silakan coba lagi.');
   })
   .finally(() => {
     isBulkProcessing.value = false;

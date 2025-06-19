@@ -10,7 +10,7 @@ class BooksExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Buku::select('judul', 'penulis', 'penerbit', 'tahun_terbit', 'isbn', 'jumlah', 'lokasi', 'deskripsi', 'kategori', 'cover', 'cover_type')->get();
+        return Buku::select('judul', 'penulis', 'penerbit', 'tahun_terbit', 'isbn', 'eksemplar', 'ketersediaan', 'no_panggil', 'asal_koleksi', 'kota_terbit', 'deskripsi', 'kategori', 'cover', 'cover_type')->get();
     }
 
     public function headings(): array
@@ -21,8 +21,11 @@ class BooksExport implements FromCollection, WithHeadings
             'Penerbit',
             'Tahun Terbit',
             'ISBN',
-            'Jumlah',
-            'Lokasi',
+            'Ekselampar',
+            'Ketersediaan',
+            'No. Panggil',
+            'Asal Koleksi',
+            'Kota Terbit',
             'Deskripsi',
             'Kategori',
             'Cover',

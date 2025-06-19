@@ -15,8 +15,11 @@ return new class extends Migration
             $table->string('penerbit')->nullable();
             $table->year('tahun_terbit')->nullable();
             $table->string('isbn')->nullable();
-            $table->integer('jumlah')->nullable();
-            $table->string('lokasi')->nullable();
+            $table->integer('eksemplar')->nullable();
+            $table->integer('ketersediaan')->nullable();
+            $table->string('no_panggil')->nullable();
+            $table->string('asal_koleksi')->nullable();
+            $table->string('kota_terbit')->nullable();
             $table->text('deskripsi')->nullable();
             $table->string('kategori')->nullable();
             $table->string('cover')->nullable();

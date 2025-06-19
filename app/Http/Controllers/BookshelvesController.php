@@ -122,7 +122,7 @@ class BookshelvesController extends Controller
             'request_date' => Carbon::now(),
         ]);
         
-        // Decrease book availability but not the total stock
+        // Decrease book availability but not the total eksemplar
         $book->decreaseAvailability();
         
         if ($request->wantsJson() || $request->ajax()) {

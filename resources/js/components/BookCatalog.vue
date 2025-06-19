@@ -58,7 +58,7 @@ const filteredBooks = computed(() => {
   // Filter berdasarkan ketersediaan
   if (selectedAvailability.value !== null) {
     result = result.filter(book => {
-      const isAvailable = book.jumlah === undefined || book.jumlah > 0;
+      const isAvailable = book.eksemplar === undefined || book.eksemplar > 0;
       return isAvailable === selectedAvailability.value;
     });
   }
@@ -181,7 +181,7 @@ function handlePageChange(page: number) {
           :author="book.penulis || book.author"
           :cover-image="book.cover_url || book.coverImage"
           :category="(book.kategori_list && book.kategori_list.length > 0) ? book.kategori_list.join(', ') : (book.kategori || book.category)"
-          :available="book.jumlah === undefined ? true : book.jumlah > 0"
+          :available="book.eksemplar === undefined ? true : book.eksemplar > 0"
         />
       </div>
       

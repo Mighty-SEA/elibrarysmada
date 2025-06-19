@@ -193,7 +193,7 @@ class LoanController extends Controller
             'request_date' => Carbon::now(),
         ]);
         
-        // Decrease book availability but not the total stock
+        // Decrease book availability but not the total eksemplar
         $book->decreaseAvailability();
         
         return redirect()->route('loans.user')->with('success', 'Permintaan peminjaman buku berhasil. Silakan ambil buku di perpustakaan.');

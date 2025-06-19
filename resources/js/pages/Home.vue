@@ -252,11 +252,11 @@ function getRegisterUrl() {
             <div class="relative w-full bg-black/40 backdrop-blur-sm py-4 md:py-8 border-t border-white/10">
               <div class="container mx-auto px-2 md:px-4">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-                  <!-- Card Jumlah Buku -->
+                  <!-- Card Eksemplar Buku -->
                   <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 md:p-4 border border-white/10 hover:bg-white/15 transition-all transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-center text-white">
                       <p class="text-lg md:text-3xl font-bold text-white mb-0.5 md:mb-1">{{ Array.isArray(page.props.books) ? page.props.books.length : 0 }}+</p>
-                      <p class="text-gray-300 text-xs md:text-sm">Jumlah Buku</p>
+                      <p class="text-gray-300 text-xs md:text-sm">Eksemplar Buku</p>
                     </div>
                   </div>
                   

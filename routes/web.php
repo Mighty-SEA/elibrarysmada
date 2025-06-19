@@ -31,8 +31,10 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
     // Route manajemen buku
     Route::resource('books', BookController::class);
     
+    // Buat route export yang khusus dan mudah diakses
+    Route::get('export-books', [BookController::class, 'exportBooks'])->name('export.books');
+    
     // Bulk actions untuk manajemen buku
-    Route::get('books/export', [BookController::class, 'export'])->name('books.export');
     Route::post('books/import', [BookController::class, 'import'])->name('books.import');
     Route::delete('books/bulk-delete', [BookController::class, 'bulkDelete'])->name('books.bulk-delete');
     Route::post('books/bulk-update-jumlah', [BookController::class, 'bulkUpdateJumlah'])->name('books.bulk-update-jumlah');
@@ -63,6 +65,9 @@ Route::middleware(['auth', 'verified', CheckUserType::class.':user'])->group(fun
         return redirect()->route('bookshelves');
     });
 });
+
+// Bulk actions untuk manajemen buku
+Route::get('/admin/books/export', [BookController::class, 'export'])->name('books.export')->middleware(['auth', 'verified', CheckUserType::class.':admin']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

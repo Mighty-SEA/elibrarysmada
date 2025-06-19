@@ -21,8 +21,11 @@ const form = useForm({
   penerbit: '',
   tahun_terbit: '',
   isbn: '',
-  jumlah: '',
-  lokasi: '',
+  eksemplar: '',
+  ketersediaan: '',
+  no_panggil: '',
+  asal_koleksi: '',
+  kota_terbit: '',
   deskripsi: '',
   kategori: '',
   cover: null as File | string | null,
@@ -100,9 +103,9 @@ function submit() {
             
             <div class="space-y-4">
               <div class="grid gap-2">
-                <Label for="jumlah">Jumlah</Label>
-                <Input id="jumlah" v-model="form.jumlah" type="number" />
-                <InputError :message="form.errors.jumlah" class="mt-2" />
+                <Label for="eksemplar">Ekslempar</Label>
+                <Input id="eksemplar" v-model="form.eksemplar" type="number" />
+                <InputError :message="form.errors.eksemplar" class="mt-2" />
               </div>
               <div class="grid gap-2">
                 <Label for="lokasi">Lokasi</Label>

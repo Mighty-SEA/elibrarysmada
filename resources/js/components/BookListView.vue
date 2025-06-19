@@ -30,10 +30,10 @@ defineProps<{
             </div>
             <span 
               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-              :class="(book.jumlah === undefined || book.jumlah > 0) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+              :class="(book.eksemplar === undefined || book.eksemplar > 0) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
             >
               <BookOpen class="h-3 w-3 mr-1" />
-              {{ (book.jumlah === undefined || book.jumlah > 0) ? 'Tersedia' : 'Tidak Tersedia' }}
+              {{ (book.eksemplar === undefined || book.eksemplar > 0) ? 'Tersedia' : 'Tidak Tersedia' }}
             </span>
           </div>
           
