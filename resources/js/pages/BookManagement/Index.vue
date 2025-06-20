@@ -36,6 +36,32 @@
         </div>
       </div>
       
+      <!-- Komponen Pencarian -->
+      <div class="mb-4 relative">
+        <div class="flex">
+          <div class="relative flex-1">
+            <Input 
+              v-model="search"
+              placeholder="Cari buku berdasarkan judul, penulis, penerbit, no.panggil atau kategori..."
+              class="pl-10 pr-10"
+            />
+            <div class="absolute left-0 top-0 h-full flex items-center pl-3">
+              <Search class="h-4 w-4 text-gray-400" />
+            </div>
+            <button 
+              v-if="search"
+              @click="clearSearch"
+              class="absolute right-0 top-0 h-full flex items-center pr-3"
+            >
+              <X class="h-4 w-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+        <div v-if="props.books.total > 0" class="text-sm text-gray-500 mt-2">
+          Menampilkan {{ props.books.total }} hasil pencarian
+        </div>
+      </div>
+      
       <!-- Bulk Actions -->
       <div v-if="selectedBooks.length > 0" class="flex items-center justify-between mb-4 p-3 bg-background rounded-md border shadow-sm">
         <div class="flex items-center gap-3">
@@ -230,7 +256,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, BookPlus, X, LoaderCircle, CheckCircle } from 'lucide-vue-next';
+import { Edit, Trash2, BookPlus, X, LoaderCircle, CheckCircle, Search } from 'lucide-vue-next';
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogTrigger from '@/components/ui/dialog/DialogTrigger.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';
@@ -242,8 +268,9 @@ import DialogClose from '@/components/ui/dialog/DialogClose.vue';
 import Pagination from '@/components/Pagination.vue';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import axios from 'axios';
+import { debounce } from 'lodash';
 
 interface PaginatedBooks {
   data: any[];
@@ -254,9 +281,43 @@ interface PaginatedBooks {
   links: any[];
 }
 
-const props = defineProps<{ books: PaginatedBooks }>();
+const props = defineProps<{ 
+  books: PaginatedBooks,
+  filters: {
+    search: string;
+  }
+}>();
+
 const isPageLoading = ref(false);
 const tableRef = ref<HTMLElement | null>(null);
+const search = ref('');
+
+// Mengisi nilai awal pencarian dari filter
+search.value = props.filters.search || '';
+
+// Debounce pencarian
+const debouncedSearch = debounce(() => {
+  router.get(route('books.index'), { search: search.value }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+}, 500);
+
+// Watch perubahan pada search
+watch(search, () => {
+  debouncedSearch();
+});
+
+// Fungsi untuk menghapus pencarian
+const clearSearch = () => {
+  search.value = '';
+  router.get(route('books.index'), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -289,9 +350,9 @@ function exportBooks() {
 function changePage(page: number) {
   isPageLoading.value = true;
   
-  router.get(route('books.index'), { page }, {
+  router.get(route('books.index'), { page, search: search.value }, {
     preserveState: true,
-    preserveScroll: true, // Gunakan true untuk mempertahankan posisi scroll saat ini
+    preserveScroll: true,
     onFinish: () => {
       isPageLoading.value = false;
     }

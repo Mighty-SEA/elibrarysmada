@@ -18,6 +18,7 @@ class LoanController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status', 'all');
+        $search = $request->input('search', '');
         
         $query = Loan::with(['user', 'book', 'approver'])
             ->orderBy('created_at', 'desc');
@@ -26,7 +27,22 @@ class LoanController extends Controller
             $query->where('status', $status);
         }
         
-        $loans = $query->paginate(10);
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('book', function($bookQuery) use ($search) {
+                    $bookQuery->where('judul', 'like', "%{$search}%");
+                })
+                ->orWhereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                           ->orWhere('username', 'like', "%{$search}%");
+                })
+                ->orWhereHas('approver', function($approverQuery) use ($search) {
+                    $approverQuery->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        $loans = $query->paginate(10)->withQueryString();
         
         // Format data for the frontend
         $loans->through(function ($loan) {
@@ -55,18 +71,36 @@ class LoanController extends Controller
         return Inertia::render('Loans/Index', [
             'loans' => $loans,
             'activeStatus' => $status,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 
     /**
      * Display loans pending approval
      */
-    public function pendingApproval()
+    public function pendingApproval(Request $request)
     {
-        $loans = Loan::with(['user', 'book'])
+        $search = $request->input('search', '');
+        
+        $query = Loan::with(['user', 'book'])
             ->where('status', 'belum_diambil')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+            
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('book', function($bookQuery) use ($search) {
+                    $bookQuery->where('judul', 'like', "%{$search}%");
+                })
+                ->orWhereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                           ->orWhere('username', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        $loans = $query->paginate(10)->withQueryString();
             
         // Format data for the frontend
         $loans->through(function ($loan) {
@@ -77,18 +111,36 @@ class LoanController extends Controller
 
         return Inertia::render('Loans/PendingApproval', [
             'loans' => $loans,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 
     /**
      * Display active loans
      */
-    public function activeLoans()
+    public function activeLoans(Request $request)
     {
-        $loans = Loan::with(['user', 'book'])
+        $search = $request->input('search', '');
+        
+        $query = Loan::with(['user', 'book'])
             ->whereIn('status', ['dipinjam', 'terlambat'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+            
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('book', function($bookQuery) use ($search) {
+                    $bookQuery->where('judul', 'like', "%{$search}%");
+                })
+                ->orWhereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                           ->orWhere('username', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        $loans = $query->paginate(10)->withQueryString();
             
         // Format data for the frontend
         $loans->through(function ($loan) {
@@ -115,20 +167,31 @@ class LoanController extends Controller
 
         return Inertia::render('Loans/ActiveLoans', [
             'loans' => $loans,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 
     /**
      * Display user's loan history
      */
-    public function userLoans()
+    public function userLoans(Request $request)
     {
         $userId = Auth::id();
+        $search = $request->input('search', '');
         
-        $loans = Loan::with('book')
+        $query = Loan::with('book')
             ->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+            
+        if ($search) {
+            $query->whereHas('book', function($bookQuery) use ($search) {
+                $bookQuery->where('judul', 'like', "%{$search}%");
+            });
+        }
+        
+        $loans = $query->paginate(10)->withQueryString();
             
         // Format data for the frontend
         $loans->through(function ($loan) {
@@ -155,6 +218,9 @@ class LoanController extends Controller
 
         return Inertia::render('Loans/UserLoans', [
             'loans' => $loans,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 

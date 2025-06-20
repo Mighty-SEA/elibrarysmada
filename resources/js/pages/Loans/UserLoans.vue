@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { 
   BookOpen, 
   ChevronLeft, 
@@ -7,11 +7,16 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   BookX,
-  Calendar
+  Calendar,
+  Search,
+  X
 } from 'lucide-vue-next';
 import Pagination from '@/components/Pagination.vue';
+import { ref, watch } from 'vue';
+import { debounce } from 'lodash';
+import { Input } from '@/components/ui/input';
 
-defineProps<{
+const props = defineProps<{
   loans: {
     data: Array<{
       id: number;
@@ -31,8 +36,43 @@ defineProps<{
       label: string;
       active: boolean;
     }>;
+    current_page: number;
+    last_page: number;
+    total: number;
   };
+  filters: {
+    search: string;
+  }
 }>();
+
+const search = ref('');
+
+// Mengisi nilai awal pencarian dari filter
+search.value = props.filters.search || '';
+
+// Debounce pencarian
+const debouncedSearch = debounce(() => {
+  router.get(route('loans.user'), { search: search.value }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+}, 500);
+
+// Watch perubahan pada search
+watch(search, () => {
+  debouncedSearch();
+});
+
+// Fungsi untuk menghapus pencarian
+const clearSearch = () => {
+  search.value = '';
+  router.get(route('loans.user'), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+};
 
 // Computed untuk mendapatkan status badge
 const getStatusBadge = (status: string, isOverdue: boolean) => {
@@ -144,6 +184,32 @@ const formatMoney = (amount: number | null) => {
           <ChevronLeft class="w-4 h-4 mr-1" />
           Kembali ke Katalog
         </Link>
+      </div>
+
+      <!-- Komponen Pencarian -->
+      <div class="mb-4 relative">
+        <div class="flex">
+          <div class="relative flex-1">
+            <Input 
+              v-model="search"
+              placeholder="Cari buku berdasarkan judul..."
+              class="pl-10 pr-10"
+            />
+            <div class="absolute left-0 top-0 h-full flex items-center pl-3">
+              <Search class="h-4 w-4 text-gray-400" />
+            </div>
+            <button 
+              v-if="search"
+              @click="clearSearch"
+              class="absolute right-0 top-0 h-full flex items-center pr-3"
+            >
+              <X class="h-4 w-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+        <div v-if="loans.total > 0" class="text-sm text-gray-500 mt-2">
+          Menampilkan {{ loans.total }} hasil pencarian
+        </div>
       </div>
 
       <!-- Daftar Peminjaman -->

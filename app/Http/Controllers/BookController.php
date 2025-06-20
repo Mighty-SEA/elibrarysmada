@@ -13,10 +13,26 @@ use Illuminate\Support\Facades\Redirect;
 
 class BookController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $perPage = 10; // Jumlah item per halaman
-        $books = Buku::paginate($perPage);
+        $search = $request->input('search', '');
+        
+        $query = Buku::query();
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('penulis', 'like', "%{$search}%")
+                  ->orWhere('penerbit', 'like', "%{$search}%")
+                  ->orWhere('tahun_terbit', 'like', "%{$search}%")
+                  ->orWhere('isbn', 'like', "%{$search}%")
+                  ->orWhere('no_panggil', 'like', "%{$search}%")
+                  ->orWhere('kategori', 'like', "%{$search}%");
+            });
+        }
+        
+        $books = $query->paginate($perPage)->withQueryString();
         
         // Tambahkan cover_url ke setiap buku
         $books->through(function ($book) {
@@ -31,7 +47,10 @@ class BookController extends Controller
         });
         
         return Inertia::render('BookManagement/Index', [
-            'books' => $books
+            'books' => $books,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 

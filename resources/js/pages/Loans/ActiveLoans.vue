@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { 
   BookOpen, 
   Clock, 
   Calendar,
   User,
   AlertTriangle,
-  CornerDownLeft
+  CornerDownLeft,
+  Search,
+  X
 } from 'lucide-vue-next';
 import Pagination from '@/components/Pagination.vue';
+import { ref, watch } from 'vue';
+import { Input } from '@/components/ui/input';
+import { debounce } from 'lodash';
 
-defineProps<{
+const props = defineProps<{
   loans: {
     data: Array<{
       id: number;
@@ -30,8 +35,43 @@ defineProps<{
       label: string;
       active: boolean;
     }>;
+    current_page: number;
+    last_page: number;
+    total: number;
   };
+  filters: {
+    search: string;
+  }
 }>();
+
+const search = ref('');
+
+// Mengisi nilai awal pencarian dari filter
+search.value = props.filters.search || '';
+
+// Debounce pencarian
+const debouncedSearch = debounce(() => {
+  router.get(route('loans.active'), { search: search.value }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+}, 500);
+
+// Watch perubahan pada search
+watch(search, () => {
+  debouncedSearch();
+});
+
+// Fungsi untuk menghapus pencarian
+const clearSearch = () => {
+  search.value = '';
+  router.get(route('loans.active'), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+};
 
 // Breadcrumbs for the layout
 const breadcrumbs: BreadcrumbItem[] = [
@@ -143,6 +183,32 @@ const processReturn = (loanId: number) => {
           >
             Permintaan Peminjaman
           </Link>
+        </div>
+      </div>
+
+      <!-- Komponen Pencarian -->
+      <div class="mb-4 relative">
+        <div class="flex">
+          <div class="relative flex-1">
+            <Input 
+              v-model="search"
+              placeholder="Cari buku dipinjam berdasarkan judul buku atau nama peminjam..."
+              class="pl-10 pr-10"
+            />
+            <div class="absolute left-0 top-0 h-full flex items-center pl-3">
+              <Search class="h-4 w-4 text-gray-400" />
+            </div>
+            <button 
+              v-if="search"
+              @click="clearSearch"
+              class="absolute right-0 top-0 h-full flex items-center pr-3"
+            >
+              <X class="h-4 w-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+        <div v-if="loans.total > 0" class="text-sm text-gray-500 mt-2">
+          Menampilkan {{ loans.total }} hasil pencarian
         </div>
       </div>
 

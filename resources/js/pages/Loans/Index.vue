@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { 
   BookOpen, 
   Clock, 
   CheckCircle2, 
   AlertTriangle, 
-  Filter
+  Filter,
+  Search,
+  X
 } from 'lucide-vue-next';
 import Pagination from '@/components/Pagination.vue';
+import { ref, watch } from 'vue';
+import { debounce } from 'lodash';
+import { Input } from '@/components/ui/input';
 
-defineProps<{
+const props = defineProps<{
   loans: {
     data: Array<{
       id: number;
@@ -31,9 +36,44 @@ defineProps<{
       label: string;
       active: boolean;
     }>;
+    current_page: number;
+    last_page: number;
+    total: number;
   };
   activeStatus: string;
+  filters: {
+    search: string;
+  }
 }>();
+
+const search = ref('');
+
+// Mengisi nilai awal pencarian dari filter
+search.value = props.filters.search || '';
+
+// Debounce pencarian
+const debouncedSearch = debounce(() => {
+  router.get(route('loans.index', { status: props.activeStatus }), { search: search.value }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+}, 500);
+
+// Watch perubahan pada search
+watch(search, () => {
+  debouncedSearch();
+});
+
+// Fungsi untuk menghapus pencarian
+const clearSearch = () => {
+  search.value = '';
+  router.get(route('loans.index', { status: props.activeStatus }), {}, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true
+  });
+};
 
 // Breadcrumbs for the layout
 const breadcrumbs: BreadcrumbItem[] = [
@@ -145,6 +185,32 @@ const formatDate = (dateString: string | null) => {
         </div>
       </div>
 
+      <!-- Komponen Pencarian -->
+      <div class="mb-4 relative">
+        <div class="flex">
+          <div class="relative flex-1">
+            <Input 
+              v-model="search"
+              placeholder="Cari peminjaman berdasarkan judul buku, nama peminjam, atau admin..."
+              class="pl-10 pr-10"
+            />
+            <div class="absolute left-0 top-0 h-full flex items-center pl-3">
+              <Search class="h-4 w-4 text-gray-400" />
+            </div>
+            <button 
+              v-if="search"
+              @click="clearSearch"
+              class="absolute right-0 top-0 h-full flex items-center pr-3"
+            >
+              <X class="h-4 w-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+        <div v-if="loans.total > 0" class="text-sm text-gray-500 mt-2">
+          Menampilkan {{ loans.total }} hasil pencarian
+        </div>
+      </div>
+
       <!-- Filter by Status -->
       <div class="mb-6 bg-white rounded-xl p-4 border border-sidebar-border/70 shadow-sm">
         <div class="flex flex-wrap items-center gap-3">
@@ -155,35 +221,35 @@ const formatDate = (dateString: string | null) => {
           
           <div class="flex flex-wrap gap-2 mt-2 sm:mt-0">
             <Link
-              :href="route('loans.index', { status: 'all' })"
+              :href="route('loans.index', { status: 'all', search })"
               class="px-3 py-1.5 text-sm rounded-md"
               :class="activeStatus === 'all' ? 'bg-blue-100 text-blue-800 font-medium' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'"
             >
               Semua
             </Link>
             <Link
-              :href="route('loans.index', { status: 'belum_diambil' })"
+              :href="route('loans.index', { status: 'belum_diambil', search })"
               class="px-3 py-1.5 text-sm rounded-md"
               :class="activeStatus === 'belum_diambil' ? 'bg-blue-100 text-blue-800 font-medium' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'"
             >
               Menunggu Diambil
             </Link>
             <Link
-              :href="route('loans.index', { status: 'dipinjam' })"
+              :href="route('loans.index', { status: 'dipinjam', search })"
               class="px-3 py-1.5 text-sm rounded-md"
               :class="activeStatus === 'dipinjam' ? 'bg-blue-100 text-blue-800 font-medium' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'"
             >
               Sedang Dipinjam
             </Link>
             <Link
-              :href="route('loans.index', { status: 'terlambat' })"
+              :href="route('loans.index', { status: 'terlambat', search })"
               class="px-3 py-1.5 text-sm rounded-md"
               :class="activeStatus === 'terlambat' ? 'bg-blue-100 text-blue-800 font-medium' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'"
             >
               Terlambat
             </Link>
             <Link
-              :href="route('loans.index', { status: 'dikembalikan' })"
+              :href="route('loans.index', { status: 'dikembalikan', search })"
               class="px-3 py-1.5 text-sm rounded-md"
               :class="activeStatus === 'dikembalikan' ? 'bg-blue-100 text-blue-800 font-medium' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'"
             >

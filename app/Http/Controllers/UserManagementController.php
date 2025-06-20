@@ -15,12 +15,29 @@ class UserManagementController extends Controller
      *
      * @return \Inertia\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('name')->paginate(10);
+        $search = $request->input('search', '');
+        
+        $query = User::query()->orderBy('name');
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%")
+                  ->orWhere('jurusan', 'like', "%{$search}%");
+            });
+        }
+        
+        $users = $query->paginate(10)->withQueryString();
         
         return Inertia::render('UserManagement/Index', [
-            'users' => $users
+            'users' => $users,
+            'filters' => [
+                'search' => $search
+            ]
         ]);
     }
 

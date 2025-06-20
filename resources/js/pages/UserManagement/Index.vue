@@ -4,9 +4,11 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, UserPlus } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Edit, Trash2, UserPlus, Search, X } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import Pagination from '@/components/Pagination.vue';
+import { Input } from '@/components/ui/input';
+import { debounce } from 'lodash';
 
 defineProps<{
     users: {
@@ -25,8 +27,40 @@ defineProps<{
         per_page: number;
         total: number;
         links: any[];
+    },
+    filters: {
+        search: string;
     }
 }>();
+
+const search = ref('');
+
+// Mengisi nilai awal pencarian dari filter
+search.value = route().params.search || '';
+
+// Debounce pencarian
+const debouncedSearch = debounce(() => {
+    router.get(route('user-management.index'), { search: search.value }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true
+    });
+}, 500);
+
+// Watch perubahan pada search
+watch(search, () => {
+    debouncedSearch();
+});
+
+// Fungsi untuk menghapus pencarian
+const clearSearch = () => {
+    search.value = '';
+    router.get(route('user-management.index'), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true
+    });
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,6 +101,32 @@ const deleteUser = (id: number) => {
                         Tambah User
                     </Button>
                 </Link>
+            </div>
+            
+            <!-- Komponen Pencarian -->
+            <div class="mb-4 relative">
+                <div class="flex">
+                    <div class="relative flex-1">
+                        <Input 
+                            v-model="search"
+                            placeholder="Cari user berdasarkan nama, username, ID, role atau jurusan..."
+                            class="pl-10 pr-10"
+                        />
+                        <div class="absolute left-0 top-0 h-full flex items-center pl-3">
+                            <Search class="h-4 w-4 text-gray-400" />
+                        </div>
+                        <button 
+                            v-if="search"
+                            @click="clearSearch"
+                            class="absolute right-0 top-0 h-full flex items-center pr-3"
+                        >
+                            <X class="h-4 w-4 text-gray-400" />
+                        </button>
+                    </div>
+                </div>
+                <div v-if="users.total > 0" class="text-sm text-gray-500 mt-2">
+                    Menampilkan {{ users.total }} hasil pencarian
+                </div>
             </div>
 
             <div class="rounded-md border">
@@ -123,7 +183,7 @@ const deleteUser = (id: number) => {
                 <Pagination 
                     :current-page="users.current_page"
                     :total-pages="users.last_page"
-                    @page-change="page => router.get(route('user-management.index'), { page }, { preserveState: true, preserveScroll: true })"
+                    @page-change="page => router.get(route('user-management.index'), { page, search }, { preserveState: true, preserveScroll: true })"
                 />
             </div>
         </div>
