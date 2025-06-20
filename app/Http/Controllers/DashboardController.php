@@ -164,6 +164,7 @@ class DashboardController extends Controller
             'users' => $users,
             'startDate' => $start,
             'endDate' => $end,
+            'autoDownload' => true,
         ]);
     }
 }
