@@ -16,6 +16,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface ChartData {
+    [key: string]: number;
+}
+
 const page = usePage();
 const totalBooks = page.props.totalBooks ?? 0;
 const totalLoans = page.props.totalLoans ?? 0;
@@ -23,6 +27,9 @@ const pendingRequests = page.props.pendingRequests ?? 0;
 const totalUsers = page.props.totalUsers ?? 0;
 const booksAdded = page.props.booksAdded;
 const booksDeleted = page.props.booksDeleted as number | null;
+const showMonthlyCharts = page.props.showMonthlyCharts as boolean;
+const loanChartMonthly = page.props.loanChartMonthly as ChartData || {};
+const userChartMonthly = page.props.userChartMonthly as ChartData || {};
 
 const startDate = ref(page.props.startDate || '');
 const endDate = ref(page.props.endDate || '');
@@ -41,8 +48,8 @@ watch([startDate, endDate], ([newStart, newEnd]) => {
     localStorage.setItem('dashboard_endDate', newEnd);
 });
 
-const loanChart = page.props.loanChart || {};
-const userChart = page.props.userChart || {};
+const loanChart = page.props.loanChart as ChartData || {};
+const userChart = page.props.userChart as ChartData || {};
 
 const chartOptions = {
     responsive: true,
@@ -95,6 +102,32 @@ const userChartData = {
             label: 'Jumlah User',
             data: Object.values(userChart).map(v => parseInt(v)),
             backgroundColor: '#f59e42',
+        },
+    ],
+};
+
+// Data chart bulanan
+const loanChartMonthlyLabels = Object.keys(loanChartMonthly);
+const userChartMonthlyLabels = Object.keys(userChartMonthly);
+
+const loanChartMonthlyData = {
+    labels: loanChartMonthlyLabels,
+    datasets: [
+        {
+            label: 'Jumlah Peminjam per Bulan',
+            data: Object.values(loanChartMonthly).map(v => parseInt(v)),
+            backgroundColor: '#10b981', // Warna hijau untuk membedakan dari chart utama
+        },
+    ],
+};
+
+const userChartMonthlyData = {
+    labels: userChartMonthlyLabels,
+    datasets: [
+        {
+            label: 'Jumlah User per Bulan',
+            data: Object.values(userChartMonthly).map(v => parseInt(v)),
+            backgroundColor: '#8b5cf6', // Warna ungu untuk membedakan dari chart utama
         },
     ],
 };
@@ -236,6 +269,22 @@ function exportPDF() {
                         <p class="text-sm text-gray-500 mt-2">Terdaftar di sistem</p>
                     </div>
                 </div>
+
+                <!-- Chart Bulanan (muncul hanya jika rentang waktu >1 bulan) -->
+                <template v-if="showMonthlyCharts">
+                    <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+                        <!-- Card Chart Peminjam per Bulan -->
+                        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                            <h2 class="text-lg font-semibold mb-2">Peminjam per Bulan</h2>
+                            <BarChart :chartData="loanChartMonthlyData" :options="chartOptions" style="width:100%;max-width:500px" />
+                        </div>
+                        <!-- Card Chart User per Bulan -->
+                        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
+                            <h2 class="text-lg font-semibold mb-2">User Baru per Bulan</h2>
+                            <BarChart :chartData="userChartMonthlyData" :options="chartOptions" style="width:100%;max-width:500px" />
+                        </div>
+                    </div>
+                </template>
 
                 <!-- HANYA 2 CHART UTAMA -->
                 <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">

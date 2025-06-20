@@ -43,6 +43,9 @@ const loans = page.props.loans || [] as Loan[];
 const users = page.props.users || [] as User[];
 const autoDownload = page.props.autoDownload ?? false;
 const isLoading = ref(true);
+const showMonthlyCharts = page.props.showMonthlyCharts ?? false;
+const loanChartMonthly = page.props.loanChartMonthly || {} as Record<string, string>;
+const userChartMonthly = page.props.userChartMonthly || {} as Record<string, string>;
 
 function formatLabel(label: string) {
     // Format: "Jenis Kelamin Jurusan" --> "Jurusan - JK"
@@ -82,6 +85,20 @@ const userChartValues = Object.values(userChart).map(value => {
     return isNaN(numValue) ? 0 : numValue;
 });
 
+// Data chart bulanan
+const loanChartMonthlyLabels = Object.keys(loanChartMonthly);
+const userChartMonthlyLabels = Object.keys(userChartMonthly);
+
+const loanChartMonthlyValues = Object.values(loanChartMonthly).map(value => {
+    const numValue = parseInt(value as string);
+    return isNaN(numValue) ? 0 : numValue;
+});
+
+const userChartMonthlyValues = Object.values(userChartMonthly).map(value => {
+    const numValue = parseInt(value as string);
+    return isNaN(numValue) ? 0 : numValue;
+});
+
 // Gunakan warna sederhana untuk chart dengan data yang sudah sesuai
 // TypeScript complains about datalabels in the chart, so we need to use "as any" to avoid type errors
 const loanChartData = {
@@ -91,6 +108,17 @@ const loanChartData = {
             label: 'Jumlah Peminjam',
             data: loanChartValues,
             backgroundColor: '#4b72b0',
+            barPercentage: 0.95,
+            categoryPercentage: 0.9,
+            datalabels: {
+                display: true,
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                anchor: 'center',
+                align: 'center'
+            }
         },
     ],
 } as any;
@@ -102,6 +130,61 @@ const userChartData = {
             label: 'Jumlah User',
             data: userChartValues,
             backgroundColor: '#c97b63',
+            barPercentage: 0.95,
+            categoryPercentage: 0.9,
+            datalabels: {
+                display: true,
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                anchor: 'center',
+                align: 'center'
+            }
+        },
+    ],
+} as any;
+
+const loanChartMonthlyData = {
+    labels: loanChartMonthlyLabels,
+    datasets: [
+        {
+            label: 'Jumlah Peminjam per Bulan',
+            data: loanChartMonthlyValues,
+            backgroundColor: '#10b981',
+            barPercentage: 0.95,
+            categoryPercentage: 0.9,
+            datalabels: {
+                display: true,
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                anchor: 'center',
+                align: 'center'
+            }
+        },
+    ],
+} as any;
+
+const userChartMonthlyData = {
+    labels: userChartMonthlyLabels,
+    datasets: [
+        {
+            label: 'Jumlah User per Bulan',
+            data: userChartMonthlyValues,
+            backgroundColor: '#8b5cf6',
+            barPercentage: 0.95,
+            categoryPercentage: 0.9,
+            datalabels: {
+                display: true,
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                anchor: 'center',
+                align: 'center'
+            }
         },
     ],
 } as any;
@@ -132,14 +215,21 @@ function printReport() {
         // Jika autoDownload aktif, langsung print
         if (autoDownload) {
             setTimeout(() => {
-                // Print menggunakan window global
-                if (typeof window !== 'undefined') {
-                    window.print();
-                    
-                    // Kembali ke dashboard setelah print dialog muncul
-                    setTimeout(() => {
-                        window.location.href = '/admin/dashboard';
-                    }, 1000);
+                // Gunakan try-catch untuk mengatasi error window
+                try {
+                    // Hanya jalankan jika dalam browser (bukan SSR)
+                    if (typeof window !== 'undefined') {
+                        window.print();
+                        
+                        // Kembali ke dashboard setelah print dialog muncul
+                        setTimeout(() => {
+                            if (typeof window !== 'undefined') {
+                                window.location.href = '/admin/dashboard';
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error('Print error:', error);
                 }
             }, 500);
         }
@@ -192,106 +282,233 @@ onMounted(() => {
 
             <!-- Chart Section -->
             <div class="chart-section">
-                <div class="chart-container">
-                    <h2>Peminjam per Jurusan</h2>
-                    <div class="chart-wrapper">
-                        <!-- Menggunakan label bawaan dari Chart.js -->
-                        <BarChart :chartData="loanChartData" :options="{
-                            maintainAspectRatio: false,
-                            responsive: true,
-                            layout: {
-                                padding: {
-                                    bottom: 60,
-                                    left: 10,
-                                    right: 10
-                                }
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: true },
-                                datalabels: {
-                                    display: false,
-                                    align: 'end',
-                                    anchor: 'end'
-                                }
-                            },
-                            scales: {
-                                y: { 
-                                    beginAtZero: true,
-                                    precision: 0,
-                                    ticks: { 
-                                        font: { size: 12 },
-                                        color: '#000000'
+                <div v-if="showMonthlyCharts" class="chart-grid">
+                    <div class="chart-container">
+                        <h2>Peminjam per Bulan</h2>
+                        <div class="chart-wrapper">
+                            <BarChart :chartData="loanChartMonthlyData" :options="{
+                                maintainAspectRatio: false,
+                                responsive: true,
+                                layout: {
+                                    padding: {
+                                        bottom: 10,
+                                        left: 5,
+                                        right: 5,
+                                        top: 5
                                     }
                                 },
-                                x: {
-                                    display: true,
-                                    ticks: {
-                                        font: { size: 12, weight: 'bold' },
-                                        color: '#000000',
-                                        autoSkip: false,
-                                        maxRotation: 45,
-                                        minRotation: 30,
-                                        padding: 5
-                                    },
-                                    grid: {
-                                        display: false
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true },
+                                    datalabels: {
+                                        display: true,
+                                        color: '#fff',
+                                        font: { 
+                                            weight: 'bold',
+                                            size: 12
+                                        },
+                                        anchor: 'center',
+                                        align: 'center'
                                     }
-                                }
-                            },
-                            animation: false
-                        }" />
+                                },
+                                scales: {
+                                    y: { 
+                                        beginAtZero: true,
+                                        precision: 0,
+                                        ticks: { 
+                                            font: { size: 11 },
+                                            color: '#000000'
+                                        }
+                                    },
+                                    x: {
+                                        display: true,
+                                        ticks: {
+                                            font: { size: 11, weight: 'bold' },
+                                            color: '#000000',
+                                            autoSkip: false,
+                                            maxRotation: 45,
+                                            minRotation: 30
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                animation: false
+                            }" />
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h2>User Baru per Bulan</h2>
+                        <div class="chart-wrapper">
+                            <BarChart :chartData="userChartMonthlyData" :options="{
+                                maintainAspectRatio: false,
+                                responsive: true,
+                                layout: {
+                                    padding: {
+                                        bottom: 10,
+                                        left: 5,
+                                        right: 5,
+                                        top: 5
+                                    }
+                                },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true },
+                                    datalabels: {
+                                        display: true,
+                                        color: '#fff',
+                                        font: { 
+                                            weight: 'bold',
+                                            size: 12
+                                        },
+                                        anchor: 'center',
+                                        align: 'center'
+                                    }
+                                },
+                                scales: {
+                                    y: { 
+                                        beginAtZero: true,
+                                        precision: 0,
+                                        ticks: { 
+                                            font: { size: 11 },
+                                            color: '#000000'
+                                        }
+                                    },
+                                    x: {
+                                        display: true,
+                                        ticks: {
+                                            font: { size: 11, weight: 'bold' },
+                                            color: '#000000',
+                                            autoSkip: false,
+                                            maxRotation: 45,
+                                            minRotation: 30
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                animation: false
+                            }" />
+                        </div>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <h2>Anggota per Jurusan</h2>
-                    <div class="chart-wrapper">
-                        <!-- Menggunakan label bawaan dari Chart.js -->
-                        <BarChart :chartData="userChartData" :options="{
-                            maintainAspectRatio: false,
-                            responsive: true,
-                            layout: {
-                                padding: {
-                                    bottom: 60,
-                                    left: 10,
-                                    right: 10
-                                }
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: true },
-                                datalabels: {
-                                    display: false,
-                                    align: 'end',
-                                    anchor: 'end'
-                                }
-                            },
-                            scales: {
-                                y: { 
-                                    beginAtZero: true,
-                                    precision: 0,
-                                    ticks: { 
-                                        font: { size: 12 },
-                                        color: '#000000'
+                
+                <div class="chart-grid">                    
+                    <div class="chart-container">
+                        <h2>Peminjam per Jurusan</h2>
+                        <div class="chart-wrapper">
+                            <!-- Menggunakan label bawaan dari Chart.js -->
+                            <BarChart :chartData="loanChartData" :options="{
+                                maintainAspectRatio: false,
+                                responsive: true,
+                                layout: {
+                                    padding: {
+                                        bottom: 10,
+                                        left: 5,
+                                        right: 5,
+                                        top: 5
                                     }
                                 },
-                                x: {
-                                    display: true,
-                                    ticks: {
-                                        font: { size: 12, weight: 'bold' },
-                                        color: '#000000',
-                                        autoSkip: false,
-                                        maxRotation: 45,
-                                        minRotation: 30,
-                                        padding: 5
-                                    },
-                                    grid: {
-                                        display: false
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true },
+                                    datalabels: {
+                                        display: true,
+                                        color: '#fff',
+                                        font: { 
+                                            weight: 'bold',
+                                            size: 12
+                                        },
+                                        anchor: 'center',
+                                        align: 'center'
                                     }
-                                }
-                            },
-                            animation: false
-                        }" />
+                                },
+                                scales: {
+                                    y: { 
+                                        beginAtZero: true,
+                                        precision: 0,
+                                        ticks: { 
+                                            font: { size: 11 },
+                                            color: '#000000'
+                                        }
+                                    },
+                                    x: {
+                                        display: true,
+                                        ticks: {
+                                            font: { size: 11, weight: 'bold' },
+                                            color: '#000000',
+                                            autoSkip: false,
+                                            maxRotation: 45,
+                                            minRotation: 30
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                animation: false
+                            }" />
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h2>Anggota per Jurusan</h2>
+                        <div class="chart-wrapper">
+                            <!-- Menggunakan label bawaan dari Chart.js -->
+                            <BarChart :chartData="userChartData" :options="{
+                                maintainAspectRatio: false,
+                                responsive: true,
+                                layout: {
+                                    padding: {
+                                        bottom: 10,
+                                        left: 5,
+                                        right: 5,
+                                        top: 5
+                                    }
+                                },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true },
+                                    datalabels: {
+                                        display: true,
+                                        color: '#fff',
+                                        font: { 
+                                            weight: 'bold',
+                                            size: 12
+                                        },
+                                        anchor: 'center',
+                                        align: 'center'
+                                    }
+                                },
+                                scales: {
+                                    y: { 
+                                        beginAtZero: true,
+                                        precision: 0,
+                                        ticks: { 
+                                            font: { size: 11 },
+                                            color: '#000000'
+                                        }
+                                    },
+                                    x: {
+                                        display: true,
+                                        ticks: {
+                                            font: { size: 11, weight: 'bold' },
+                                            color: '#000000',
+                                            autoSkip: false,
+                                            maxRotation: 45,
+                                            minRotation: 30
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                animation: false
+                            }" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -358,38 +575,37 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
-/* Style khusus untuk halaman cetak */
+<style>
 .print-container {
-    max-width: 100%;
+    max-width: 800px;
     margin: 0 auto;
-    font-family: Arial, sans-serif;
-    color: #000;
-    background: #fff;
+    padding: 20px;
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .loading-container {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    background: #fff;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
     z-index: 9999;
 }
 
 .loading-spinner {
     width: 50px;
     height: 50px;
+    border-radius: 50%;
     border: 5px solid #f3f3f3;
     border-top: 5px solid #3498db;
-    border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 @keyframes spin {
@@ -398,118 +614,118 @@ onMounted(() => {
 }
 
 .print-controls {
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    text-align: center;
     margin-bottom: 20px;
 }
 
 .print-button {
     padding: 10px 20px;
-    background: #4b72b0;
+    background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
 }
 
-.print-content {
-    padding: 20px;
+.print-button:hover {
+    background-color: #45a049;
 }
 
 .hidden {
     display: none;
 }
 
+.print-content {
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin-bottom: 20px;
+}
+
 .print-header {
     text-align: center;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #000;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid #000;
 }
 
 .print-header h1 {
-    font-size: 24px;
+    font-size: 20px;
+    font-weight: bold;
     margin: 0 0 5px 0;
 }
 
 .print-subtitle {
-    font-size: 16px;
+    font-size: 14px;
     margin: 5px 0;
 }
 
 .summary-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .summary-box {
     width: 30%;
     border: 1px solid #000;
-    padding: 15px;
+    padding: 8px;
     text-align: center;
 }
 
 .summary-box h3 {
-    margin: 0 0 10px 0;
-    font-size: 16px;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 .summary-value {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
     margin: 0;
 }
 
 .chart-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
 .chart-container {
-    width: 48%;
     border: 1px solid #000;
-    padding: 15px;
+    padding: 6px;
     overflow: hidden;
 }
 
 .chart-container h2 {
-    font-size: 18px;
-    margin: 0 0 15px 0;
+    font-size: 14px;
+    margin: 0 0 6px 0;
     text-align: center;
+    font-weight: normal;
 }
 
 .chart-wrapper {
-    height: 350px;
+    height: 320px;
     width: 100%;
     max-width: 100%;
     position: relative;
     overflow: visible;
-    margin-bottom: 50px;
+    margin-bottom: 0;
 }
-
-/* Label chart yang ditampilkan secara manual - dinonaktifkan untuk sementara */
-.chart-labels {
-    display: none; /* sembunyikan label */
-}
-
-.chart-label {
-    display: none; /* sembunyikan label */
-}
-
-/* Hapus label manual karena sekarang menggunakan label bawaan Chart.js */
 
 .table-section {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .table-section h2 {
-    font-size: 18px;
-    margin: 0 0 10px 0;
+    font-size: 15px;
+    margin: 0 0 8px 0;
+    font-weight: bold;
 }
 
 .data-table {
@@ -521,8 +737,9 @@ onMounted(() => {
 .data-table th,
 .data-table td {
     border: 1px solid #000;
-    padding: 8px;
+    padding: 6px;
     text-align: left;
+    font-size: 12px;
 }
 
 .data-table th {
@@ -543,24 +760,25 @@ onMounted(() => {
 }
 
 .print-footer {
-    margin-top: 30px;
-    padding-top: 10px;
+    margin-top: 15px;
+    padding-top: 5px;
     border-top: 1px solid #000;
     text-align: right;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 /* Media queries untuk print */
 @media print {
     @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 7mm;
     }
     
     body {
         margin: 0;
         padding: 0;
         background: #fff;
+        font-family: Arial, Helvetica, sans-serif;
     }
     
     .no-print {
@@ -579,11 +797,11 @@ onMounted(() => {
         padding: 0;
     }
     
-    .chart-section {
-        page-break-after: always;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        page-break-inside: avoid;
     }
     
     .chart-container {
@@ -592,18 +810,9 @@ onMounted(() => {
     }
     
     .chart-wrapper {
-        max-height: 350px;
-        height: 350px;
+        max-height: 320px;
+        height: 320px;
         overflow: visible;
-        margin-bottom: 50px;
-    }
-    
-    .chart-labels {
-        display: none; /* sembunyikan label di mode cetak */
-    }
-    
-    .chart-label {
-        display: none; /* sembunyikan label di mode cetak */
     }
     
     .table-section {
@@ -618,7 +827,5 @@ onMounted(() => {
         page-break-inside: avoid;
         page-break-after: auto;
     }
-    
-    /* Sudah menggunakan label bawaan Chart.js */
 }
 </style> 

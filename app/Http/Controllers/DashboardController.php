@@ -9,6 +9,7 @@ use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -89,6 +90,53 @@ class DashboardController extends Controller
                 return $group->count();
             });
 
+        // Chart per bulan
+        $loanChartMonthly = [];
+        $userChartMonthly = [];
+        $showMonthlyCharts = false;
+
+        // Jika ada tanggal start dan end, periksa apakah rentangnya lebih dari satu bulan
+        if ($start && $end) {
+            $startDate = Carbon::parse($start);
+            $endDate = Carbon::parse($end);
+            
+            // Jika rentang lebih dari satu bulan atau bulan berbeda
+            if ($startDate->format('Ym') != $endDate->format('Ym')) {
+                $showMonthlyCharts = true;
+
+                // Ambil semua peminjaman per bulan
+                $loanChartMonthly = $loans
+                    ->groupBy(function($loan) {
+                        return Carbon::parse($loan->created_at)->format('Y-m');
+                    })
+                    ->map(function($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+
+                // Ambil semua user yang dibuat per bulan
+                $userChartMonthly = $users
+                    ->groupBy(function($user) {
+                        return Carbon::parse($user->created_at)->format('Y-m');
+                    })
+                    ->map(function($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+
+                // Format label bulan menjadi lebih ramah pengguna
+                $loanChartMonthly = $loanChartMonthly->mapWithKeys(function($value, $key) {
+                    $date = Carbon::createFromFormat('Y-m', $key);
+                    return [$date->translatedFormat('M Y') => $value];
+                });
+
+                $userChartMonthly = $userChartMonthly->mapWithKeys(function($value, $key) {
+                    $date = Carbon::createFromFormat('Y-m', $key);
+                    return [$date->translatedFormat('M Y') => $value];
+                });
+            }
+        }
+
         return Inertia::render('Dashboard', [
             'totalBooks' => $totalBooks,
             'totalLoans' => $totalLoans,
@@ -100,6 +148,9 @@ class DashboardController extends Controller
             'booksDeleted' => $booksDeleted,
             'loanChart' => $loanChart,
             'userChart' => $userChart,
+            'loanChartMonthly' => $loanChartMonthly,
+            'userChartMonthly' => $userChartMonthly,
+            'showMonthlyCharts' => $showMonthlyCharts,
         ]);
     }
 
@@ -153,6 +204,53 @@ class DashboardController extends Controller
                 return $group->count();
             });
 
+        // Chart per bulan
+        $loanChartMonthly = [];
+        $userChartMonthly = [];
+        $showMonthlyCharts = false;
+
+        // Jika ada tanggal start dan end, periksa apakah rentangnya lebih dari satu bulan
+        if ($start && $end) {
+            $startDate = Carbon::parse($start);
+            $endDate = Carbon::parse($end);
+            
+            // Jika rentang lebih dari satu bulan atau bulan berbeda
+            if ($startDate->format('Ym') != $endDate->format('Ym')) {
+                $showMonthlyCharts = true;
+
+                // Ambil semua peminjaman per bulan
+                $loanChartMonthly = $loans
+                    ->groupBy(function($loan) {
+                        return Carbon::parse($loan->created_at)->format('Y-m');
+                    })
+                    ->map(function($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+
+                // Ambil semua user yang dibuat per bulan
+                $userChartMonthly = $users
+                    ->groupBy(function($user) {
+                        return Carbon::parse($user->created_at)->format('Y-m');
+                    })
+                    ->map(function($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+
+                // Format label bulan menjadi lebih ramah pengguna
+                $loanChartMonthly = $loanChartMonthly->mapWithKeys(function($value, $key) {
+                    $date = Carbon::createFromFormat('Y-m', $key);
+                    return [$date->translatedFormat('M Y') => $value];
+                });
+
+                $userChartMonthly = $userChartMonthly->mapWithKeys(function($value, $key) {
+                    $date = Carbon::createFromFormat('Y-m', $key);
+                    return [$date->translatedFormat('M Y') => $value];
+                });
+            }
+        }
+
         return Inertia::render('DashboardExport', [
             'totalBooks' => $totalBooks,
             'totalLoans' => $totalLoans,
@@ -160,6 +258,9 @@ class DashboardController extends Controller
             'totalUsers' => $totalUsers,
             'loanChart' => $loanChart,
             'userChart' => $userChart,
+            'loanChartMonthly' => $loanChartMonthly,
+            'userChartMonthly' => $userChartMonthly,
+            'showMonthlyCharts' => $showMonthlyCharts,
             'loans' => $loans,
             'users' => $users,
             'startDate' => $start,
