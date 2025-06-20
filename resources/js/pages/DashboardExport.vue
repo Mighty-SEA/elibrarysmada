@@ -2,9 +2,16 @@
 import { usePage } from '@inertiajs/vue3';
 import { BarChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
-Chart.register(...registerables);
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+Chart.register(...registerables, ChartDataLabels);
 
 import { onMounted, ref } from 'vue';
+declare global {
+  interface Window {
+    print: () => void;
+    location: Location;
+  }
+}
 
 // Definisikan interface untuk tipe data loans dan users
 interface User {
@@ -56,29 +63,27 @@ function formatLabel(label: string) {
     // Format jurusan
     const jurusanLabel = jurusan === '-' ? 'Tidak Diketahui' : jurusan;
     
-    return jurusanLabel + ' - ' + jkLabel;
+    // Mengembalikan format singkat agar lebih mudah ditampilkan di chart
+    return jurusanLabel + '-' + jkLabel;
 }
 
-// Buat array pasangan [key, value] untuk memastikan data sesuai dengan label
-const loanChartEntries = Object.entries(loanChart || {});
-const userChartEntries = Object.entries(userChart || {});
+// Format label dengan fungsi formatLabel
+const loanChartLabels = Object.keys(loanChart).map(formatLabel);
+const userChartLabels = Object.keys(userChart).map(formatLabel);
 
-// Format label dan pastikan data sesuai
-const loanChartLabels = loanChartEntries.map(([key]) => formatLabel(key));
-const userChartLabels = userChartEntries.map(([key]) => formatLabel(key));
-
-// Data chart yang sudah sesuai dengan label
-const loanChartValues = loanChartEntries.map(([, value]) => {
+// Ambil nilai dari loanChart dan userChart
+const loanChartValues = Object.values(loanChart).map(value => {
     const numValue = parseInt(value as string);
     return isNaN(numValue) ? 0 : numValue;
 });
 
-const userChartValues = userChartEntries.map(([, value]) => {
+const userChartValues = Object.values(userChart).map(value => {
     const numValue = parseInt(value as string);
     return isNaN(numValue) ? 0 : numValue;
 });
 
 // Gunakan warna sederhana untuk chart dengan data yang sudah sesuai
+// TypeScript complains about datalabels in the chart, so we need to use "as any" to avoid type errors
 const loanChartData = {
     labels: loanChartLabels,
     datasets: [
@@ -88,7 +93,7 @@ const loanChartData = {
             backgroundColor: '#4b72b0',
         },
     ],
-};
+} as any;
 
 const userChartData = {
     labels: userChartLabels,
@@ -99,7 +104,11 @@ const userChartData = {
             backgroundColor: '#c97b63',
         },
     ],
-};
+} as any;
+
+// Debug labels
+console.log('Label Peminjam:', loanChartLabels);
+console.log('Label Anggota:', userChartLabels);
 
 function formatDateRange(start: string | null, end: string | null) {
     if (!start && !end) return 'Semua Data';
@@ -123,13 +132,15 @@ function printReport() {
         // Jika autoDownload aktif, langsung print
         if (autoDownload) {
             setTimeout(() => {
-                // Gunakan declare untuk window.print() agar TypeScript tidak komplain
-                (window as Window).print();
-                
-                // Kembali ke dashboard setelah print dialog muncul
-                setTimeout(() => {
-                    window.location.href = '/admin/dashboard';
-                }, 1000);
+                // Print menggunakan window global
+                if (typeof window !== 'undefined') {
+                    window.print();
+                    
+                    // Kembali ke dashboard setelah print dialog muncul
+                    setTimeout(() => {
+                        window.location.href = '/admin/dashboard';
+                    }, 1000);
+                }
             }, 500);
         }
     }, 1000);
@@ -150,7 +161,7 @@ onMounted(() => {
 
         <!-- Tombol Print (hanya tampil jika tidak autoDownload) -->
         <div v-if="!autoDownload && !isLoading" class="print-controls no-print">
-            <button @click="() => (window as Window).print()" class="print-button">
+            <button @click="() => { if (typeof window !== 'undefined') window.print(); }" class="print-button">
                 Cetak Laporan
             </button>
         </div>
@@ -184,24 +195,47 @@ onMounted(() => {
                 <div class="chart-container">
                     <h2>Peminjam per Jurusan</h2>
                     <div class="chart-wrapper">
+                        <!-- Menggunakan label bawaan dari Chart.js -->
                         <BarChart :chartData="loanChartData" :options="{
                             maintainAspectRatio: false,
                             responsive: true,
+                            layout: {
+                                padding: {
+                                    bottom: 60,
+                                    left: 10,
+                                    right: 10
+                                }
+                            },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { enabled: true }
+                                tooltip: { enabled: true },
+                                datalabels: {
+                                    display: false,
+                                    align: 'end',
+                                    anchor: 'end'
+                                }
                             },
                             scales: {
                                 y: { 
                                     beginAtZero: true,
                                     precision: 0,
-                                    ticks: { font: { size: 12 } }
+                                    ticks: { 
+                                        font: { size: 12 },
+                                        color: '#000000'
+                                    }
                                 },
                                 x: {
-                                    ticks: { 
-                                        font: { size: 10 },
+                                    display: true,
+                                    ticks: {
+                                        font: { size: 12, weight: 'bold' },
+                                        color: '#000000',
+                                        autoSkip: false,
                                         maxRotation: 45,
-                                        minRotation: 45
+                                        minRotation: 30,
+                                        padding: 5
+                                    },
+                                    grid: {
+                                        display: false
                                     }
                                 }
                             },
@@ -212,24 +246,47 @@ onMounted(() => {
                 <div class="chart-container">
                     <h2>Anggota per Jurusan</h2>
                     <div class="chart-wrapper">
+                        <!-- Menggunakan label bawaan dari Chart.js -->
                         <BarChart :chartData="userChartData" :options="{
                             maintainAspectRatio: false,
                             responsive: true,
+                            layout: {
+                                padding: {
+                                    bottom: 60,
+                                    left: 10,
+                                    right: 10
+                                }
+                            },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { enabled: true }
+                                tooltip: { enabled: true },
+                                datalabels: {
+                                    display: false,
+                                    align: 'end',
+                                    anchor: 'end'
+                                }
                             },
                             scales: {
                                 y: { 
                                     beginAtZero: true,
                                     precision: 0,
-                                    ticks: { font: { size: 12 } }
+                                    ticks: { 
+                                        font: { size: 12 },
+                                        color: '#000000'
+                                    }
                                 },
                                 x: {
-                                    ticks: { 
-                                        font: { size: 10 },
+                                    display: true,
+                                    ticks: {
+                                        font: { size: 12, weight: 'bold' },
+                                        color: '#000000',
+                                        autoSkip: false,
                                         maxRotation: 45,
-                                        minRotation: 45
+                                        minRotation: 30,
+                                        padding: 5
+                                    },
+                                    grid: {
+                                        display: false
                                     }
                                 }
                             },
@@ -427,12 +484,24 @@ onMounted(() => {
 }
 
 .chart-wrapper {
-    height: 300px;
+    height: 350px;
     width: 100%;
     max-width: 100%;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    margin-bottom: 50px;
 }
+
+/* Label chart yang ditampilkan secara manual - dinonaktifkan untuk sementara */
+.chart-labels {
+    display: none; /* sembunyikan label */
+}
+
+.chart-label {
+    display: none; /* sembunyikan label */
+}
+
+/* Hapus label manual karena sekarang menggunakan label bawaan Chart.js */
 
 .table-section {
     margin-bottom: 30px;
@@ -523,9 +592,18 @@ onMounted(() => {
     }
     
     .chart-wrapper {
-        max-height: 300px;
-        height: 300px;
-        overflow: hidden;
+        max-height: 350px;
+        height: 350px;
+        overflow: visible;
+        margin-bottom: 50px;
+    }
+    
+    .chart-labels {
+        display: none; /* sembunyikan label di mode cetak */
+    }
+    
+    .chart-label {
+        display: none; /* sembunyikan label di mode cetak */
     }
     
     .table-section {
@@ -540,5 +618,7 @@ onMounted(() => {
         page-break-inside: avoid;
         page-break-after: auto;
     }
+    
+    /* Sudah menggunakan label bawaan Chart.js */
 }
 </style> 
