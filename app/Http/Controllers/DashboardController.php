@@ -29,14 +29,13 @@ class DashboardController extends Controller
         $pendingQuery = Loan::where('status', 'belum_diambil');
 
         if ($start) {
-            $loanQuery->whereDate('created_at', '>=', $start);
-            $pendingQuery->whereDate('created_at', '>=', $start);
+            $loanQuery->whereDate('request_date', '>=', $start);
+            $pendingQuery->whereDate('request_date', '>=', $start);
             $userQuery->whereDate('created_at', '>=', $start);
-            // Buku biasanya tidak berdasarkan tanggal, tapi bisa ditambah jika ingin
         }
         if ($end) {
-            $loanQuery->whereDate('created_at', '<=', $end);
-            $pendingQuery->whereDate('created_at', '<=', $end);
+            $loanQuery->whereDate('request_date', '<=', $end);
+            $pendingQuery->whereDate('request_date', '<=', $end);
             $userQuery->whereDate('created_at', '<=', $end);
         }
 
@@ -104,10 +103,10 @@ class DashboardController extends Controller
             if ($startDate->format('Ym') != $endDate->format('Ym')) {
                 $showMonthlyCharts = true;
 
-                // Ambil semua peminjaman per bulan
+                // Ambil semua peminjaman per bulan berdasarkan request_date
                 $loanChartMonthly = $loans
                     ->groupBy(function($loan) {
-                        return Carbon::parse($loan->created_at)->format('Y-m');
+                        return Carbon::parse($loan->request_date)->format('Y-m');
                     })
                     ->map(function($group) {
                         return $group->count();
@@ -165,13 +164,13 @@ class DashboardController extends Controller
         $pendingQuery = Loan::where('status', 'belum_diambil');
 
         if ($start) {
-            $loanQuery->whereDate('created_at', '>=', $start);
-            $pendingQuery->whereDate('created_at', '>=', $start);
+            $loanQuery->whereDate('request_date', '>=', $start);
+            $pendingQuery->whereDate('request_date', '>=', $start);
             $userQuery->whereDate('created_at', '>=', $start);
         }
         if ($end) {
-            $loanQuery->whereDate('created_at', '<=', $end);
-            $pendingQuery->whereDate('created_at', '<=', $end);
+            $loanQuery->whereDate('request_date', '<=', $end);
+            $pendingQuery->whereDate('request_date', '<=', $end);
             $userQuery->whereDate('created_at', '<=', $end);
         }
 
@@ -218,10 +217,10 @@ class DashboardController extends Controller
             if ($startDate->format('Ym') != $endDate->format('Ym')) {
                 $showMonthlyCharts = true;
 
-                // Ambil semua peminjaman per bulan
+                // Ambil semua peminjaman per bulan berdasarkan request_date
                 $loanChartMonthly = $loans
                     ->groupBy(function($loan) {
-                        return Carbon::parse($loan->created_at)->format('Y-m');
+                        return Carbon::parse($loan->request_date)->format('Y-m');
                     })
                     ->map(function($group) {
                         return $group->count();

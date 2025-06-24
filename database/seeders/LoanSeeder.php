@@ -44,7 +44,7 @@ class LoanSeeder extends Seeder
         // Update ketersediaan buku berdasarkan peminjaman aktif
         $this->updateBookAvailability();
         
-        $this->command->info('200 loan data seeded successfully with dates ranging from January to June 2024!');
+        $this->command->info('200 loan data seeded successfully with dates ranging from January to June 2025!');
     }
     
     /**
@@ -55,8 +55,8 @@ class LoanSeeder extends Seeder
         $this->command->info("Creating {$count} active loans...");
         
         // Rentang tanggal untuk peminjaman aktif (lebih baru)
-        $startDate = Carbon::create(2024, 5, 1); // 1 Mei 2024
-        $endDate = Carbon::create(2024, 6, 30);  // 30 Juni 2024
+        $startDate = Carbon::create(2025, 5, 1); // 1 Mei 2025
+        $endDate = Carbon::create(2025, 6, 30);  // 30 Juni 2025
         
         for ($i = 0; $i < $count; $i++) {
             // Tanggal request acak dalam rentang
@@ -89,8 +89,8 @@ class LoanSeeder extends Seeder
         $this->command->info("Creating {$count} returned loans...");
         
         // Rentang tanggal untuk peminjaman yang sudah dikembalikan
-        $startDate = Carbon::create(2024, 2, 1); // 1 Februari 2024
-        $endDate = Carbon::create(2024, 5, 15);  // 15 Mei 2024
+        $startDate = Carbon::create(2025, 2, 1); // 1 Februari 2025
+        $endDate = Carbon::create(2025, 5, 15);  // 15 Mei 2025
         
         for ($i = 0; $i < $count; $i++) {
             // Tanggal request acak dalam rentang
@@ -124,8 +124,8 @@ class LoanSeeder extends Seeder
         $this->command->info("Creating {$count} overdue loans...");
         
         // Rentang tanggal untuk peminjaman terlambat
-        $startDate = Carbon::create(2024, 1, 1); // 1 Januari 2024
-        $endDate = Carbon::create(2024, 3, 31);  // 31 Maret 2024
+        $startDate = Carbon::create(2025, 1, 1); // 1 Januari 2025
+        $endDate = Carbon::create(2025, 3, 31);  // 31 Maret 2025
         
         for ($i = 0; $i < $count; $i++) {
             // Tanggal request acak dalam rentang
@@ -162,8 +162,8 @@ class LoanSeeder extends Seeder
         $this->command->info("Creating {$count} pending loans...");
         
         // Rentang tanggal untuk peminjaman belum diambil (terbaru)
-        $startDate = Carbon::create(2024, 6, 1); // 1 Juni 2024
-        $endDate = Carbon::create(2024, 6, 30);  // 30 Juni 2024
+        $startDate = Carbon::create(2025, 6, 1); // 1 Juni 2025
+        $endDate = Carbon::create(2025, 6, 30);  // 30 Juni 2025
         
         for ($i = 0; $i < $count; $i++) {
             // Tanggal request acak dalam rentang terbatas (terbaru)

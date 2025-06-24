@@ -100,6 +100,34 @@ const userChartMonthlyValues = Object.values(userChartMonthly).map(value => {
     return isNaN(numValue) ? 0 : numValue;
 });
 
+// Opsi chart yang konsisten untuk semua chart
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    animations: {
+        colors: false,
+        x: false,
+        y: false
+    },
+    transitions: {
+        active: {
+            animation: {
+                duration: 0
+            }
+        }
+    },
+    scales: {
+        y: { 
+            beginAtZero: true,
+            ticks: {
+                precision: 0,
+                stepSize: 1
+            }
+        }
+    }
+};
+
 // Gunakan warna sederhana untuk chart dengan data yang sudah sesuai
 // TypeScript complains about datalabels in the chart, so we need to use "as any" to avoid type errors
 const loanChartData = {
@@ -145,10 +173,6 @@ const userChartMonthlyData = {
         },
     ]
 } as any;
-
-// Debug labels
-console.log('Label Peminjam:', loanChartLabels);
-console.log('Label Anggota:', userChartLabels);
 
 function formatDateRange(start: string | null, end: string | null) {
     if (!start && !end) return 'Semua Data';
@@ -242,127 +266,43 @@ onMounted(() => {
 
             <!-- Chart Section -->
             <div class="chart-section">
+                <!-- Chart Bulanan (muncul hanya jika rentang waktu >1 bulan) -->
                 <div v-if="showMonthlyCharts" class="chart-grid">
                     <div class="chart-container">
                         <h2>Peminjam per Bulan</h2>
                         <div class="chart-wrapper">
-                            <BarChart :chartData="loanChartMonthlyData" :options="{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                animation: false,
-                                animations: {
-                                    colors: false,
-                                    x: false,
-                                    y: false
-                                },
-                                transitions: {
-                                    active: {
-                                        animation: {
-                                            duration: 0
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: { 
-                                        beginAtZero: true
-                                    }
-                                }
-                            }" />
+                            <BarChart :chartData="loanChartMonthlyData" :options="chartOptions" />
                         </div>
                     </div>
                     
                     <div class="chart-container">
                         <h2>User Baru per Bulan</h2>
                         <div class="chart-wrapper">
-                            <BarChart :chartData="userChartMonthlyData" :options="{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                animation: false,
-                                animations: {
-                                    colors: false,
-                                    x: false,
-                                    y: false
-                                },
-                                transitions: {
-                                    active: {
-                                        animation: {
-                                            duration: 0
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: { 
-                                        beginAtZero: true
-                                    }
-                                }
-                            }" />
+                            <BarChart :chartData="userChartMonthlyData" :options="chartOptions" />
                         </div>
                     </div>
                 </div>
                 
+                <!-- Chart Per Jurusan -->
                 <div class="chart-grid">                    
                     <div class="chart-container">
                         <h2>Peminjam per Jurusan</h2>
                         <div class="chart-wrapper">
-                            <!-- Menggunakan label bawaan dari Chart.js -->
-                            <BarChart :chartData="loanChartData" :options="{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                animation: false,
-                                animations: {
-                                    colors: false,
-                                    x: false,
-                                    y: false
-                                },
-                                transitions: {
-                                    active: {
-                                        animation: {
-                                            duration: 0
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: { 
-                                        beginAtZero: true
-                                    }
-                                }
-                            }" />
+                            <BarChart :chartData="loanChartData" :options="chartOptions" />
                         </div>
                     </div>
                     
                     <div class="chart-container">
                         <h2>Anggota per Jurusan</h2>
                         <div class="chart-wrapper">
-                            <!-- Menggunakan label bawaan dari Chart.js -->
-                            <BarChart :chartData="userChartData" :options="{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                animation: false,
-                                animations: {
-                                    colors: false,
-                                    x: false,
-                                    y: false
-                                },
-                                transitions: {
-                                    active: {
-                                        animation: {
-                                            duration: 0
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: { 
-                                        beginAtZero: true
-                                    }
-                                }
-                            }" />
+                            <BarChart :chartData="userChartData" :options="chartOptions" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Table Peminjam -->
-            <div class="table-section">
+            <!-- Table Peminjam - Mulai halaman baru saat cetak -->
+            <div class="table-section page-break-before">
                 <h2>Daftar Peminjam</h2>
                 <table class="data-table">
                     <thead>
@@ -387,8 +327,8 @@ onMounted(() => {
                 </table>
             </div>
 
-            <!-- Table Users -->
-            <div class="table-section">
+            <!-- Table Users - Mulai halaman baru saat cetak -->
+            <div class="table-section page-break-before">
                 <h2>Daftar Anggota</h2>
                 <table class="data-table">
                     <thead>
@@ -714,6 +654,11 @@ onMounted(() => {
     .chart-section {
         page-break-inside: avoid;
         margin-bottom: 15px;
+    }
+    
+    /* Mulai halaman baru untuk setiap tabel */
+    .page-break-before {
+        page-break-before: always;
     }
     
     .table-section {
