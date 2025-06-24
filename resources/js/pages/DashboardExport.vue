@@ -181,7 +181,7 @@ function printReport() {
                         // Kembali ke dashboard setelah print dialog muncul
                         setTimeout(() => {
                             if (typeof window !== 'undefined') {
-                                window.location.href = '/admin/dashboard';
+                                window.location.href = route('dashboard');
                             }
                         }, 1000);
                     }
@@ -210,6 +210,9 @@ onMounted(() => {
         <div v-if="!autoDownload && !isLoading" class="print-controls no-print">
             <button @click="() => { if (typeof window !== 'undefined') window.print(); }" class="print-button">
                 Cetak Laporan
+            </button>
+            <button @click="() => { if (typeof window !== 'undefined') window.location.href = route('dashboard'); }" class="back-button">
+                Kembali
             </button>
         </div>
 
@@ -475,6 +478,21 @@ onMounted(() => {
 
 .print-button:hover {
     background-color: #45a049;
+}
+
+.back-button {
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+}
+
+.back-button:hover {
+    background-color: #6a7074;
 }
 
 .hidden {

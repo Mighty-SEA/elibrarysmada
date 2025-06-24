@@ -159,7 +159,7 @@ function exportPDF() {
     if (startDate.value) params.push(`start=${encodeURIComponent(startDate.value)}`);
     if (endDate.value) params.push(`end=${encodeURIComponent(endDate.value)}`);
     const url = params.length > 0 ? `${route('dashboard.export')}?${params.join('&')}` : route('dashboard.export');
-    window.open(url, '_blank');
+    window.location.href = url; // Menggunakan window.location.href alih-alih window.open
 }
 </script>
 
@@ -171,7 +171,7 @@ function exportPDF() {
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-2xl font-bold text-gray-900">Dashboard Administrasi</h1>
                 <button @click="exportPDF" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 transition">
-                    Export PDF
+                    Cetak
                 </button>
             </div>
             <!-- Area yang akan di-export ke PDF -->
