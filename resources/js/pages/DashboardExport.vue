@@ -246,6 +246,19 @@ onMounted(() => {
                             <BarChart :chartData="loanChartMonthlyData" :options="{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                animation: false,
+                                animations: {
+                                    colors: false,
+                                    x: false,
+                                    y: false
+                                },
+                                transitions: {
+                                    active: {
+                                        animation: {
+                                            duration: 0
+                                        }
+                                    }
+                                },
                                 scales: {
                                     y: { 
                                         beginAtZero: true
@@ -261,6 +274,19 @@ onMounted(() => {
                             <BarChart :chartData="userChartMonthlyData" :options="{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                animation: false,
+                                animations: {
+                                    colors: false,
+                                    x: false,
+                                    y: false
+                                },
+                                transitions: {
+                                    active: {
+                                        animation: {
+                                            duration: 0
+                                        }
+                                    }
+                                },
                                 scales: {
                                     y: { 
                                         beginAtZero: true
@@ -279,6 +305,19 @@ onMounted(() => {
                             <BarChart :chartData="loanChartData" :options="{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                animation: false,
+                                animations: {
+                                    colors: false,
+                                    x: false,
+                                    y: false
+                                },
+                                transitions: {
+                                    active: {
+                                        animation: {
+                                            duration: 0
+                                        }
+                                    }
+                                },
                                 scales: {
                                     y: { 
                                         beginAtZero: true
@@ -295,6 +334,19 @@ onMounted(() => {
                             <BarChart :chartData="userChartData" :options="{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                animation: false,
+                                animations: {
+                                    colors: false,
+                                    x: false,
+                                    y: false
+                                },
+                                transitions: {
+                                    active: {
+                                        animation: {
+                                            duration: 0
+                                        }
+                                    }
+                                },
                                 scales: {
                                     y: { 
                                         beginAtZero: true
