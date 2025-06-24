@@ -68,7 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: 'Manajemen User',
+        title: 'Manajemen Anggota',
         href: '/user-management',
     },
 ];
@@ -89,16 +89,16 @@ const deleteUser = (id: number) => {
 </script>
 
 <template>
-    <Head title="Manajemen User" />
+    <Head title="Manajemen Anggota" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-2xl font-bold">Manajemen User</h1>
+                <h1 class="text-2xl font-bold">Manajemen Anggota</h1>
                 <Link :href="route('user-management.create')">
                     <Button>
                         <UserPlus class="mr-2 h-4 w-4" />
-                        Tambah User
+                        Tambah Anggota
                     </Button>
                 </Link>
             </div>
@@ -109,7 +109,7 @@ const deleteUser = (id: number) => {
                     <div class="relative flex-1">
                         <Input 
                             v-model="search"
-                            placeholder="Cari user berdasarkan nama, username, ID, role atau jurusan..."
+                            placeholder="Cari anggota berdasarkan nama, username, ID, role atau jurusan..."
                             class="pl-10 pr-10"
                         />
                         <div class="absolute left-0 top-0 h-full flex items-center pl-3">
@@ -173,7 +173,7 @@ const deleteUser = (id: number) => {
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="users.data.length === 0">
-                            <TableCell colspan="9" class="text-center py-6">Tidak ada data user</TableCell>
+                            <TableCell colspan="9" class="text-center py-6">Tidak ada data anggota</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

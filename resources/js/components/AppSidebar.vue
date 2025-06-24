@@ -22,7 +22,7 @@ const adminNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Manajemen User',
+        title: 'Manajemen Anggota',
         href: '/admin/user-management',
         icon: Users,
     },

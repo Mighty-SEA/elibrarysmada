@@ -25,7 +25,8 @@ class LoanSeeder extends Seeder
         // Ambil ID murid dan admin untuk data peminjaman
         $muridIds = User::where('role', 'murid')->pluck('id')->toArray();
         $adminIds = User::where('role', 'administrasi')->pluck('id')->toArray();
-        $bookIds = Buku::where('ketersediaan', '>', 0)->pluck('id')->toArray();
+        // Ambil semua buku tanpa memfilter berdasarkan ketersediaan
+        $bookIds = Buku::pluck('id')->toArray();
         
         if (empty($muridIds) || empty($bookIds) || empty($adminIds)) {
             $this->command->error('Data murid, buku, atau admin tidak ditemukan. Pastikan seeder lain sudah dijalankan.');
@@ -193,24 +194,22 @@ class LoanSeeder extends Seeder
     {
         $this->command->info('Updating book availability...');
         
-        // Hitung jumlah peminjaman aktif untuk setiap buku
-        $activeLoans = Loan::whereIn('status', ['dipinjam', 'terlambat', 'belum_diambil'])
-            ->select('book_id')
-            ->selectRaw('COUNT(*) as loan_count')
-            ->groupBy('book_id')
-            ->get();
+        // Ambil semua buku
+        $books = Buku::all();
+        
+        // Untuk setiap buku, hitung jumlah peminjaman aktif
+        foreach ($books as $book) {
+            // Hitung jumlah peminjaman aktif untuk buku ini
+            $activeLoansCount = Loan::whereIn('status', ['dipinjam', 'terlambat', 'belum_diambil'])
+                ->where('book_id', $book->id)
+                ->count();
             
-        // Update ketersediaan buku
-        foreach ($activeLoans as $loanData) {
-            $book = Buku::find($loanData->book_id);
-            if ($book) {
-                // Pastikan ketersediaan tetap valid
-                $newAvailability = $book->eksemplar - $loanData->loan_count;
-                if ($newAvailability < 0) $newAvailability = 0;
-                
-                $book->ketersediaan = $newAvailability;
-                $book->save();
-            }
+            // Update ketersediaan buku
+            $eksemplar = $book->eksemplar ?: 0;
+            $newAvailability = max(0, $eksemplar - $activeLoansCount);
+            
+            $book->ketersediaan = $newAvailability;
+            $book->save();
         }
     }
 }

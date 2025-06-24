@@ -42,16 +42,44 @@ class UserFactory extends Factory
         $randomDate = Carbon::createFromTimestamp(
             rand($startDate->timestamp, $endDate->timestamp)
         );
-
+        
+        // Daftar nama depan Indonesia
+        $namaDepanPria = ['Budi', 'Agus', 'Dedi', 'Eko', 'Bambang', 'Joko', 'Hadi', 'Slamet', 'Dimas', 'Andi', 
+                          'Rizki', 'Fajar', 'Bayu', 'Hendra', 'Irwan', 'Dodi', 'Arif', 'Wahyu', 'Yusuf', 'Aditya'];
+        $namaDepanWanita = ['Siti', 'Dewi', 'Rina', 'Ani', 'Yuni', 'Lina', 'Wati', 'Lia', 'Fitri', 'Ratna', 
+                           'Indah', 'Dian', 'Ayu', 'Ika', 'Nur', 'Sri', 'Erni', 'Endah', 'Tika', 'Maya'];
+        
+        // Daftar nama belakang Indonesia
+        $namaBelakang = ['Wijaya', 'Susanto', 'Saputra', 'Hidayat', 'Nugraha', 'Setiawan', 'Kusuma', 'Wibowo', 'Santoso', 'Pratama', 
+                         'Suryadi', 'Putra', 'Utama', 'Permana', 'Purnama', 'Firmansyah', 'Kurniawan', 'Hartono', 'Sugiarto', 'Budiman'];
+        
+        // Tentukan jenis kelamin acak
+        $jenisKelamin = fake()->randomElement(['Laki-laki', 'Perempuan']);
+        
+        // Pilih nama depan berdasarkan jenis kelamin
+        $namaDepan = ($jenisKelamin === 'Laki-laki') 
+            ? $namaDepanPria[array_rand($namaDepanPria)] 
+            : $namaDepanWanita[array_rand($namaDepanWanita)];
+        
+        // Pilih nama belakang
+        $belakang = $namaBelakang[array_rand($namaBelakang)];
+        
+        // Gabungkan nama depan dan belakang
+        $namaLengkap = $namaDepan . ' ' . $belakang;
+        
+        // Buat nomor telepon Indonesia (format: 08xxxxxxxxxx)
+        $nomorTelepon = '08' . rand(1, 9) . rand(1, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9);
+        
         return [
             'id' => $id,
-            'name' => fake()->name(),
-            'username' => fake()->unique()->userName(),
+            'name' => $namaLengkap,
+            'username' => strtolower($namaDepan) . '.' . strtolower($belakang) . rand(1, 99),
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'murid',
-            'jenis_kelamin' => fake()->randomElement(['Laki-laki', 'Perempuan']),
-            'jurusan' => fake()->randomElement(['IPA', 'IPS', 'Bahasa']),
+            'jenis_kelamin' => $jenisKelamin,
+            'jurusan' => fake()->randomElement(['IPA', 'IPS']),
             'tahun_angkatan' => $tahun,
+            'nomor_telepon' => $nomorTelepon,
             'created_at' => $randomDate,
             'updated_at' => $randomDate,
         ];

@@ -54,9 +54,6 @@ watch([startDate, endDate], ([newStart, newEnd]) => {
     localStorage.setItem('dashboard_endDate', newEnd);
 });
 
-const loanChart = page.props.loanChart as ChartData || {};
-const userChart = page.props.userChart as ChartData || {};
-
 const chartOptions = {
     responsive: true,
     plugins: {
@@ -77,39 +74,6 @@ const chartOptions = {
             precision: 0,
         }
     }
-};
-
-function formatLabel(label: string) {
-    // Pisahkan label menjadi [jenis_kelamin, jurusan]
-    const [jk, ...jurusanArr] = label.split(' ');
-    const jkLabel = jk === '-' ? 'Tidak Diketahui' : (jk === 'Laki-laki' ? 'L' : (jk === 'Perempuan' ? 'P' : jk));
-    const jurusanLabel = jurusanArr.join(' ') === '-' ? 'Tidak Diketahui' : jurusanArr.join(' ');
-    return jurusanLabel + ' - ' + jkLabel;
-}
-
-const loanChartLabels = Object.keys(loanChart).map(formatLabel);
-const userChartLabels = Object.keys(userChart).map(formatLabel);
-
-const loanChartData = {
-    labels: loanChartLabels,
-    datasets: [
-        {
-            label: 'Jumlah Peminjam',
-            data: Object.values(loanChart).map(v => parseInt(v)),
-            backgroundColor: '#2563eb',
-        },
-    ],
-};
-
-const userChartData = {
-    labels: userChartLabels,
-    datasets: [
-        {
-            label: 'Jumlah User',
-            data: Object.values(userChart).map(v => parseInt(v)),
-            backgroundColor: '#f59e42',
-        },
-    ],
 };
 
 // Data chart bulanan
@@ -265,10 +229,10 @@ function exportPDF() {
                         <p class="text-sm text-gray-500 mt-2">Menunggu persetujuan</p>
                     </div>
                     
-                    <!-- Total Pengguna -->
+                    <!-- Total Anggota -->
                     <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-lg font-medium text-gray-700">Total Pengguna</h3>
+                            <h3 class="text-lg font-medium text-gray-700">Total Anggota</h3>
                             <Users class="h-6 w-6 text-purple-500" />
                         </div>
                         <p class="text-3xl font-bold text-gray-900">{{ totalUsers }}</p>
@@ -292,19 +256,7 @@ function exportPDF() {
                     </div>
                 </template>
 
-                <!-- HANYA 2 CHART UTAMA -->
-                <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-                    <!-- Card Chart 1 -->
-                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                        <h2 class="text-lg font-semibold mb-2">Peminjam</h2>
-                        <BarChart :chartData="loanChartData" :options="chartOptions" style="width:100%;max-width:500px" />
-                    </div>
-                    <!-- Card Chart 2 -->
-                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                        <h2 class="text-lg font-semibold mb-2">Anggota</h2>
-                        <BarChart :chartData="userChartData" :options="chartOptions" style="width:100%;max-width:500px" />
-                    </div>
-                </div>
+                <!-- Chart per Jurusan dihapus -->
             </div>
             
             <!-- Quick Access Section -->
@@ -390,9 +342,9 @@ function exportPDF() {
                         >
                             <div class="flex items-center gap-2">
                                 <Users class="h-5 w-5 text-purple-500" />
-                                <h3 class="font-medium text-gray-900">Manajemen Pengguna</h3>
+                                <h3 class="font-medium text-gray-900">Manajemen Anggota</h3>
                             </div>
-                            <p class="text-sm text-gray-600">Kelola pengguna perpustakaan</p>
+                            <p class="text-sm text-gray-600">Kelola anggota perpustakaan</p>
                         </Link>
                     </div>
                 </div>

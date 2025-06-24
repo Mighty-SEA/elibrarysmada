@@ -21,6 +21,8 @@ interface User {
   username: string;
   jurusan?: string;
   jenis_kelamin?: string;
+  tahun_angkatan?: string;
+  nomor_telepon?: string;
 }
 
 interface Book {
@@ -38,8 +40,9 @@ const page = usePage();
 const totalBooks = page.props.totalBooks ?? 0;
 const totalLoans = page.props.totalLoans ?? 0;
 const totalUsers = page.props.totalUsers ?? 0;
-const loanChart = page.props.loanChart || {} as Record<string, string>;
-const userChart = page.props.userChart || {} as Record<string, string>;
+// Chart per jurusan tidak lagi digunakan
+// const loanChart = page.props.loanChart || {} as Record<string, string>;
+// const userChart = page.props.userChart || {} as Record<string, string>;
 const loans = page.props.loans || [] as Loan[];
 const users = page.props.users || [] as User[];
 const autoDownload = page.props.autoDownload ?? false;
@@ -48,43 +51,44 @@ const showMonthlyCharts = page.props.showMonthlyCharts ?? false;
 const loanChartMonthly = page.props.loanChartMonthly || {} as Record<string, string>;
 const userChartMonthly = page.props.userChartMonthly || {} as Record<string, string>;
 
-function formatLabel(label: string) {
-    // Format: "Jenis Kelamin Jurusan" --> "Jurusan - JK"
-    if (!label || label === '-') return 'Tidak Diketahui';
-    
-    const parts = label.split(' ');
-    if (parts.length < 2) return label; // Jika format tidak sesuai, kembalikan label asli
-    
-    const jk = parts[0];
-    const jurusan = parts.slice(1).join(' ');
-    
-    // Format jenis kelamin
-    let jkLabel = jk;
-    if (jk === 'Laki-laki') jkLabel = 'L';
-    else if (jk === 'Perempuan') jkLabel = 'P';
-    else if (jk === '-') jkLabel = 'Tidak Diketahui';
-    
-    // Format jurusan
-    const jurusanLabel = jurusan === '-' ? 'Tidak Diketahui' : jurusan;
-    
-    // Mengembalikan format singkat agar lebih mudah ditampilkan di chart
-    return jurusanLabel + '-' + jkLabel;
-}
+// Fungsi formatLabel tidak lagi digunakan karena chart per jurusan dihapus
+// function formatLabel(label: string) {
+//     // Format: "Jenis Kelamin Jurusan" --> "Jurusan - JK"
+//     if (!label || label === '-') return 'Tidak Diketahui';
+//     
+//     const parts = label.split(' ');
+//     if (parts.length < 2) return label; // Jika format tidak sesuai, kembalikan label asli
+//     
+//     const jk = parts[0];
+//     const jurusan = parts.slice(1).join(' ');
+//     
+//     // Format jenis kelamin
+//     let jkLabel = jk;
+//     if (jk === 'Laki-laki') jkLabel = 'L';
+//     else if (jk === 'Perempuan') jkLabel = 'P';
+//     else if (jk === '-') jkLabel = 'Tidak Diketahui';
+//     
+//     // Format jurusan
+//     const jurusanLabel = jurusan === '-' ? 'Tidak Diketahui' : jurusan;
+//     
+//     // Mengembalikan format singkat agar lebih mudah ditampilkan di chart
+//     return jurusanLabel + '-' + jkLabel;
+// }
 
 // Format label dengan fungsi formatLabel
-const loanChartLabels = Object.keys(loanChart).map(formatLabel);
-const userChartLabels = Object.keys(userChart).map(formatLabel);
+// const loanChartLabels = Object.keys(loanChart).map(formatLabel);
+// const userChartLabels = Object.keys(userChart).map(formatLabel);
 
 // Ambil nilai dari loanChart dan userChart
-const loanChartValues = Object.values(loanChart).map(value => {
-    const numValue = parseInt(value as string);
-    return isNaN(numValue) ? 0 : numValue;
-});
-
-const userChartValues = Object.values(userChart).map(value => {
-    const numValue = parseInt(value as string);
-    return isNaN(numValue) ? 0 : numValue;
-});
+// const loanChartValues = Object.values(loanChart).map(value => {
+//     const numValue = parseInt(value as string);
+//     return isNaN(numValue) ? 0 : numValue;
+// });
+// 
+// const userChartValues = Object.values(userChart).map(value => {
+//     const numValue = parseInt(value as string);
+//     return isNaN(numValue) ? 0 : numValue;
+// });
 
 // Data chart bulanan
 const loanChartMonthlyLabels = Object.keys(loanChartMonthly);
@@ -128,29 +132,28 @@ const chartOptions = {
     }
 };
 
-// Gunakan warna sederhana untuk chart dengan data yang sudah sesuai
-// TypeScript complains about datalabels in the chart, so we need to use "as any" to avoid type errors
-const loanChartData = {
-    labels: loanChartLabels,
-    datasets: [
-        {
-            label: 'Jumlah Peminjam',
-            data: loanChartValues,
-            backgroundColor: '#4b72b0'
-        },
-    ]
-} as any;
-
-const userChartData = {
-    labels: userChartLabels,
-    datasets: [
-        {
-            label: 'Jumlah User',
-            data: userChartValues,
-            backgroundColor: '#c97b63'
-        },
-    ]
-} as any;
+// Chart per jurusan tidak lagi digunakan
+// const loanChartData = {
+//     labels: loanChartLabels,
+//     datasets: [
+//         {
+//             label: 'Jumlah Peminjam',
+//             data: loanChartValues,
+//             backgroundColor: '#4b72b0'
+//         },
+//     ]
+// } as any;
+// 
+// const userChartData = {
+//     labels: userChartLabels,
+//     datasets: [
+//         {
+//             label: 'Jumlah User',
+//             data: userChartValues,
+//             backgroundColor: '#c97b63'
+//         },
+//     ]
+// } as any;
 
 const loanChartMonthlyData = {
     labels: loanChartMonthlyLabels,
@@ -259,7 +262,7 @@ onMounted(() => {
                     <p class="summary-value">{{ totalLoans }}</p>
                 </div>
                 <div class="summary-box">
-                    <h3>Total Pengguna</h3>
+                    <h3>Total Anggota</h3>
                     <p class="summary-value">{{ totalUsers }}</p>
                 </div>
             </div>
@@ -283,32 +286,16 @@ onMounted(() => {
                     </div>
                 </div>
                 
-                <!-- Chart Per Jurusan -->
-                <div class="chart-grid">                    
-                    <div class="chart-container">
-                        <h2>Peminjam per Jurusan</h2>
-                        <div class="chart-wrapper">
-                            <BarChart :chartData="loanChartData" :options="chartOptions" />
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <h2>Anggota per Jurusan</h2>
-                        <div class="chart-wrapper">
-                            <BarChart :chartData="userChartData" :options="chartOptions" />
-                        </div>
-                    </div>
-                </div>
+                <!-- Chart Per Jurusan dihapus -->
             </div>
 
             <!-- Table Peminjam - Mulai halaman baru saat cetak -->
             <div class="table-section page-break-before">
-                <h2>Daftar Peminjam</h2>
+                <h2>Daftar Buku yang Dipinjam</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Nama Peminjam</th>
                             <th>Judul Buku</th>
                             <th>Status</th>
                         </tr>
@@ -316,12 +303,11 @@ onMounted(() => {
                     <tbody>
                         <tr v-for="(loan, i) in (loans as Loan[])" :key="loan.id">
                             <td>{{ i + 1 }}</td>
-                            <td>{{ loan.user?.name || '-' }}</td>
                             <td>{{ loan.book?.judul || '-' }}</td>
                             <td class="capitalize">{{ loan.status }}</td>
                         </tr>
                         <tr v-if="(loans as Loan[]).length === 0">
-                            <td colspan="4" class="text-center">Tidak ada data peminjam.</td>
+                            <td colspan="3" class="text-center">Tidak ada data peminjaman.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -338,6 +324,8 @@ onMounted(() => {
                             <th>Username</th>
                             <th>Jurusan</th>
                             <th>Jenis Kelamin</th>
+                            <th>Angkatan</th>
+                            <th>Nomor Telepon</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -347,9 +335,11 @@ onMounted(() => {
                             <td>{{ user.username }}</td>
                             <td>{{ user.jurusan || '-' }}</td>
                             <td>{{ user.jenis_kelamin || '-' }}</td>
+                            <td>{{ user.tahun_angkatan || '-' }}</td>
+                            <td>{{ user.nomor_telepon || '-' }}</td>
                         </tr>
                         <tr v-if="(users as User[]).length === 0">
-                            <td colspan="5" class="text-center">Tidak ada data anggota.</td>
+                            <td colspan="7" class="text-center">Tidak ada data anggota.</td>
                         </tr>
                     </tbody>
                 </table>

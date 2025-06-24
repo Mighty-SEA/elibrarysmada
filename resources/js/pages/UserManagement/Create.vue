@@ -15,11 +15,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: 'Manajemen User',
+        title: 'Manajemen Anggota',
         href: '/user-management',
     },
     {
-        title: 'Tambah User',
+        title: 'Tambah Anggota',
         href: '/user-management/create',
     },
 ];
@@ -60,12 +60,12 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Tambah User" />
+    <Head title="Tambah Anggota" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-2xl font-bold">Tambah User</h1>
+                <h1 class="text-2xl font-bold">Tambah Anggota</h1>
             </div>
 
             <div class="rounded-md border p-6">

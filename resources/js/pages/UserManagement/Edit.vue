@@ -24,8 +24,8 @@ const props = defineProps<{ user: User }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Manajemen User', href: '/user-management' },
-    { title: 'Edit User', href: `/user-management/${props.user.id}/edit` },
+    { title: 'Manajemen Anggota', href: '/user-management' },
+    { title: 'Edit Anggota', href: `/user-management/${props.user.id}/edit` },
 ];
 
 const form = useForm({
@@ -56,12 +56,12 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Edit User" />
+    <Head title="Edit Anggota" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-2xl font-bold">Edit User</h1>
+                <h1 class="text-2xl font-bold">Edit Anggota</h1>
             </div>
 
             <div class="rounded-md border p-6">

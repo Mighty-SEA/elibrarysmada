@@ -25,28 +25,31 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'administrasi',
             'tahun_angkatan' => 2025,
+            'nomor_telepon' => '081234567890',
         ]);
         
         // Buat guru
         User::create([
             'id' => '2025002',
-            'name' => 'Guru Demo',
+            'name' => 'Bambang Setiawan',
             'username' => 'guru',
             'password' => Hash::make('password'),
             'role' => 'guru',
             'tahun_angkatan' => 2025,
+            'nomor_telepon' => '081298765432',
         ]);
         
         // Buat murid
         User::create([
             'id' => '2025003',
-            'name' => 'Murid Demo',
+            'name' => 'Dimas Pratama',
             'username' => 'murid',
             'password' => Hash::make('password'),
             'role' => 'murid',
             'tahun_angkatan' => 2025,
             'jenis_kelamin' => 'Laki-laki',
             'jurusan' => 'IPA',
+            'nomor_telepon' => '085712345678',
         ]);
 
         // Seeder 100 murid
