@@ -167,7 +167,7 @@ const userChartMonthlyData = {
     labels: userChartMonthlyLabels,
     datasets: [
         {
-            label: 'Jumlah User per Bulan',
+            label: 'Jumlah Anggota Baru per Bulan',
             data: userChartMonthlyValues,
             backgroundColor: '#8b5cf6'
         },
@@ -276,7 +276,7 @@ onMounted(() => {
                     </div>
                     
                     <div class="chart-container">
-                        <h2>User Baru per Bulan</h2>
+                        <h2>Anggota Baru per Bulan</h2>
                         <div class="chart-wrapper">
                             <BarChart :chartData="userChartMonthlyData" :options="chartOptions" />
                         </div>

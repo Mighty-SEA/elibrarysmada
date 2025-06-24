@@ -131,7 +131,7 @@ const userChartMonthlyData = {
     labels: userChartMonthlyLabels,
     datasets: [
         {
-            label: 'Jumlah User per Bulan',
+            label: 'Jumlah Anggota Baru per Bulan',
             data: Object.values(userChartMonthly).map(v => parseInt(v)),
             backgroundColor: '#8b5cf6', // Warna ungu untuk membedakan dari chart utama
         },
@@ -286,7 +286,7 @@ function exportPDF() {
                         </div>
                         <!-- Card Chart User per Bulan -->
                         <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center min-h-[220px] w-full">
-                            <h2 class="text-lg font-semibold mb-2">User Baru per Bulan</h2>
+                            <h2 class="text-lg font-semibold mb-2">Anggota Baru per Bulan</h2>
                             <BarChart :chartData="userChartMonthlyData" :options="chartOptions" style="width:100%;max-width:500px" />
                         </div>
                     </div>
