@@ -513,8 +513,8 @@ onMounted(() => {
                 </div>
             </div>
 
-            <!-- Table Peminjam -->
-            <div class="table-section">
+            <!-- Table Peminjam - Halaman Baru -->
+            <div class="table-section page-break-before">
                 <h2>Daftar Peminjam</h2>
                 <table class="data-table">
                     <thead>
@@ -539,8 +539,8 @@ onMounted(() => {
                 </table>
             </div>
 
-            <!-- Table Users -->
-            <div class="table-section">
+            <!-- Table Users - Halaman Baru -->
+            <div class="table-section page-break-before">
                 <h2>Daftar Anggota</h2>
                 <table class="data-table">
                     <thead>
@@ -767,6 +767,13 @@ onMounted(() => {
     font-size: 10px;
 }
 
+/* Page break class untuk mode normal (non-print) */
+.page-break-before {
+    margin-top: 50px;
+    border-top: 1px dashed #ccc;
+    padding-top: 30px;
+}
+
 /* Media queries untuk print */
 @media print {
     @page {
@@ -826,6 +833,11 @@ onMounted(() => {
     tr {
         page-break-inside: avoid;
         page-break-after: auto;
+    }
+    
+    /* Tambahkan page break */
+    .page-break-before {
+        page-break-before: always;
     }
 }
 </style> 
