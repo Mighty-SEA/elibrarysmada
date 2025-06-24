@@ -40,6 +40,12 @@ onMounted(() => {
     const savedEnd = localStorage.getItem('dashboard_endDate');
     if (savedStart !== null) startDate.value = savedStart;
     if (savedEnd !== null) endDate.value = savedEnd;
+    
+    // Otomatis terapkan filter jika ada nilai disimpan di localStorage
+    if ((savedStart !== null || savedEnd !== null) && 
+        (savedStart !== page.props.startDate || savedEnd !== page.props.endDate)) {
+        filterByDate();
+    }
 });
 
 // Simpan filter ke localStorage setiap kali berubah
