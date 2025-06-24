@@ -2,8 +2,9 @@
 import { usePage } from '@inertiajs/vue3';
 import { BarChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-Chart.register(...registerables, ChartDataLabels);
+
+// Pastikan Chart.js teregistrasi dengan benar
+Chart.register(...registerables);
 
 import { onMounted, ref } from 'vue';
 declare global {
@@ -107,20 +108,9 @@ const loanChartData = {
         {
             label: 'Jumlah Peminjam',
             data: loanChartValues,
-            backgroundColor: '#4b72b0',
-            barPercentage: 0.95,
-            categoryPercentage: 0.9,
-            datalabels: {
-                display: true,
-                color: '#fff',
-                font: {
-                    weight: 'bold'
-                },
-                anchor: 'center',
-                align: 'center'
-            }
+            backgroundColor: '#4b72b0'
         },
-    ],
+    ]
 } as any;
 
 const userChartData = {
@@ -129,20 +119,9 @@ const userChartData = {
         {
             label: 'Jumlah User',
             data: userChartValues,
-            backgroundColor: '#c97b63',
-            barPercentage: 0.95,
-            categoryPercentage: 0.9,
-            datalabels: {
-                display: true,
-                color: '#fff',
-                font: {
-                    weight: 'bold'
-                },
-                anchor: 'center',
-                align: 'center'
-            }
+            backgroundColor: '#c97b63'
         },
-    ],
+    ]
 } as any;
 
 const loanChartMonthlyData = {
@@ -151,20 +130,9 @@ const loanChartMonthlyData = {
         {
             label: 'Jumlah Peminjam per Bulan',
             data: loanChartMonthlyValues,
-            backgroundColor: '#10b981',
-            barPercentage: 0.95,
-            categoryPercentage: 0.9,
-            datalabels: {
-                display: true,
-                color: '#fff',
-                font: {
-                    weight: 'bold'
-                },
-                anchor: 'center',
-                align: 'center'
-            }
+            backgroundColor: '#10b981'
         },
-    ],
+    ]
 } as any;
 
 const userChartMonthlyData = {
@@ -173,20 +141,9 @@ const userChartMonthlyData = {
         {
             label: 'Jumlah User per Bulan',
             data: userChartMonthlyValues,
-            backgroundColor: '#8b5cf6',
-            barPercentage: 0.95,
-            categoryPercentage: 0.9,
-            datalabels: {
-                display: true,
-                color: '#fff',
-                font: {
-                    weight: 'bold'
-                },
-                anchor: 'center',
-                align: 'center'
-            }
+            backgroundColor: '#8b5cf6'
         },
-    ],
+    ]
 } as any;
 
 // Debug labels
@@ -287,54 +244,13 @@ onMounted(() => {
                         <h2>Peminjam per Bulan</h2>
                         <div class="chart-wrapper">
                             <BarChart :chartData="loanChartMonthlyData" :options="{
-                                maintainAspectRatio: false,
                                 responsive: true,
-                                layout: {
-                                    padding: {
-                                        bottom: 10,
-                                        left: 5,
-                                        right: 5,
-                                        top: 5
-                                    }
-                                },
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: true },
-                                    datalabels: {
-                                        display: true,
-                                        color: '#fff',
-                                        font: { 
-                                            weight: 'bold',
-                                            size: 12
-                                        },
-                                        anchor: 'center',
-                                        align: 'center'
-                                    }
-                                },
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: { 
-                                        beginAtZero: true,
-                                        precision: 0,
-                                        ticks: { 
-                                            font: { size: 11 },
-                                            color: '#000000'
-                                        }
-                                    },
-                                    x: {
-                                        display: true,
-                                        ticks: {
-                                            font: { size: 11, weight: 'bold' },
-                                            color: '#000000',
-                                            autoSkip: false,
-                                            maxRotation: 45,
-                                            minRotation: 30
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
+                                        beginAtZero: true
                                     }
-                                },
-                                animation: false
+                                }
                             }" />
                         </div>
                     </div>
@@ -343,54 +259,13 @@ onMounted(() => {
                         <h2>User Baru per Bulan</h2>
                         <div class="chart-wrapper">
                             <BarChart :chartData="userChartMonthlyData" :options="{
-                                maintainAspectRatio: false,
                                 responsive: true,
-                                layout: {
-                                    padding: {
-                                        bottom: 10,
-                                        left: 5,
-                                        right: 5,
-                                        top: 5
-                                    }
-                                },
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: true },
-                                    datalabels: {
-                                        display: true,
-                                        color: '#fff',
-                                        font: { 
-                                            weight: 'bold',
-                                            size: 12
-                                        },
-                                        anchor: 'center',
-                                        align: 'center'
-                                    }
-                                },
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: { 
-                                        beginAtZero: true,
-                                        precision: 0,
-                                        ticks: { 
-                                            font: { size: 11 },
-                                            color: '#000000'
-                                        }
-                                    },
-                                    x: {
-                                        display: true,
-                                        ticks: {
-                                            font: { size: 11, weight: 'bold' },
-                                            color: '#000000',
-                                            autoSkip: false,
-                                            maxRotation: 45,
-                                            minRotation: 30
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
+                                        beginAtZero: true
                                     }
-                                },
-                                animation: false
+                                }
                             }" />
                         </div>
                     </div>
@@ -402,54 +277,13 @@ onMounted(() => {
                         <div class="chart-wrapper">
                             <!-- Menggunakan label bawaan dari Chart.js -->
                             <BarChart :chartData="loanChartData" :options="{
-                                maintainAspectRatio: false,
                                 responsive: true,
-                                layout: {
-                                    padding: {
-                                        bottom: 10,
-                                        left: 5,
-                                        right: 5,
-                                        top: 5
-                                    }
-                                },
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: true },
-                                    datalabels: {
-                                        display: true,
-                                        color: '#fff',
-                                        font: { 
-                                            weight: 'bold',
-                                            size: 12
-                                        },
-                                        anchor: 'center',
-                                        align: 'center'
-                                    }
-                                },
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: { 
-                                        beginAtZero: true,
-                                        precision: 0,
-                                        ticks: { 
-                                            font: { size: 11 },
-                                            color: '#000000'
-                                        }
-                                    },
-                                    x: {
-                                        display: true,
-                                        ticks: {
-                                            font: { size: 11, weight: 'bold' },
-                                            color: '#000000',
-                                            autoSkip: false,
-                                            maxRotation: 45,
-                                            minRotation: 30
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
+                                        beginAtZero: true
                                     }
-                                },
-                                animation: false
+                                }
                             }" />
                         </div>
                     </div>
@@ -459,62 +293,21 @@ onMounted(() => {
                         <div class="chart-wrapper">
                             <!-- Menggunakan label bawaan dari Chart.js -->
                             <BarChart :chartData="userChartData" :options="{
-                                maintainAspectRatio: false,
                                 responsive: true,
-                                layout: {
-                                    padding: {
-                                        bottom: 10,
-                                        left: 5,
-                                        right: 5,
-                                        top: 5
-                                    }
-                                },
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: true },
-                                    datalabels: {
-                                        display: true,
-                                        color: '#fff',
-                                        font: { 
-                                            weight: 'bold',
-                                            size: 12
-                                        },
-                                        anchor: 'center',
-                                        align: 'center'
-                                    }
-                                },
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: { 
-                                        beginAtZero: true,
-                                        precision: 0,
-                                        ticks: { 
-                                            font: { size: 11 },
-                                            color: '#000000'
-                                        }
-                                    },
-                                    x: {
-                                        display: true,
-                                        ticks: {
-                                            font: { size: 11, weight: 'bold' },
-                                            color: '#000000',
-                                            autoSkip: false,
-                                            maxRotation: 45,
-                                            minRotation: 30
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
+                                        beginAtZero: true
                                     }
-                                },
-                                animation: false
+                                }
                             }" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Table Peminjam - Halaman Baru -->
-            <div class="table-section page-break-before">
+            <!-- Table Peminjam -->
+            <div class="table-section">
                 <h2>Daftar Peminjam</h2>
                 <table class="data-table">
                     <thead>
@@ -539,8 +332,8 @@ onMounted(() => {
                 </table>
             </div>
 
-            <!-- Table Users - Halaman Baru -->
-            <div class="table-section page-break-before">
+            <!-- Table Users -->
+            <div class="table-section">
                 <h2>Daftar Anggota</h2>
                 <table class="data-table">
                     <thead>
@@ -577,7 +370,7 @@ onMounted(() => {
 
 <style>
 .print-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
     background-color: #fff;
@@ -699,23 +492,31 @@ onMounted(() => {
 .chart-container {
     border: 1px solid #000;
     padding: 6px;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .chart-container h2 {
     font-size: 14px;
-    margin: 0 0 6px 0;
+    margin: 0 0 8px 0;
     text-align: center;
     font-weight: normal;
 }
 
 .chart-wrapper {
-    height: 320px;
-    width: 100%;
-    max-width: 100%;
-    position: relative;
-    overflow: visible;
-    margin-bottom: 0;
+    height: 350px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.chart-wrapper > div {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.chart-wrapper canvas {
+    height: 100% !important;
 }
 
 .table-section {
@@ -807,25 +608,49 @@ onMounted(() => {
     .chart-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 15px;
         page-break-inside: avoid;
+        margin-bottom: 20px;
     }
     
     .chart-container {
-        overflow: hidden;
         page-break-inside: avoid;
+        width: 100%;
+        border: 1px solid #000;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
     }
     
     .chart-wrapper {
-        max-height: 320px;
-        height: 320px;
-        overflow: visible;
+        height: 350px;
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .chart-wrapper > div {
+        height: 100% !important;
+        width: 100% !important;
+    }
+    
+    .chart-wrapper canvas {
+        height: 100% !important;
+    }
+    
+    /* Pastikan semua konten masuk dalam satu halaman */
+    .print-header, 
+    .summary-section,
+    .chart-section {
+        page-break-inside: avoid;
+        margin-bottom: 15px;
     }
     
     .table-section {
         page-break-inside: avoid;
     }
-    
+
+    /* Kembali aktifkan tabel untuk cetak */
     .data-table {
         page-break-inside: auto;
     }
@@ -834,10 +659,10 @@ onMounted(() => {
         page-break-inside: avoid;
         page-break-after: auto;
     }
-    
-    /* Tambahkan page break */
-    .page-break-before {
-        page-break-before: always;
-    }
+}
+
+/* Tambahan CSS untuk chart size */
+.chart-section canvas {
+    max-width: 100%;
 }
 </style> 
