@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, ShoppingCart, Users, BookMarked, Clock } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, ShoppingCart, Users, BookMarked, Clock, FileText } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -71,6 +71,11 @@ const footerNavItems: NavItem[] = [
         title: 'Perpustakaan Digital',
         href: '/',
         icon: BookOpen,
+    },
+    {
+        title: 'Dokumentasi',
+        href: '/documentation',
+        icon: FileText,
     }
 ];
 

@@ -15,6 +15,89 @@ Route::get('/', [\App\Http\Controllers\BookController::class, 'home'])->name('ho
 // Book detail route
 Route::get('/book/{book}', [\App\Http\Controllers\BookController::class, 'detail'])->name('book.detail');
 
+// Documentation routes
+Route::prefix('documentation')->group(function () {
+    // Overview page (default)
+    Route::get('/', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'overview']
+        ]);
+    })->name('documentation');
+    
+    // Initialization page
+    Route::get('/initialization', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'initialization']
+        ]);
+    })->name('documentation.initialization');
+    
+    // Migration page
+    Route::get('/migration', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'migration']
+        ]);
+    })->name('documentation.migration');
+    
+    // Route page
+    Route::get('/route', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'route']
+        ]);
+    })->name('documentation.route');
+    
+    // Model page
+    Route::get('/model', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'model']
+        ]);
+    })->name('documentation.model');
+    
+    // Controller page
+    Route::get('/controller', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'controller']
+        ]);
+    })->name('documentation.controller');
+    
+    // View page
+    Route::get('/view', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'view']
+        ]);
+    })->name('documentation.view');
+    
+    // Database page
+    Route::get('/database', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'database']
+        ]);
+    })->name('documentation.database');
+    
+    // Features page
+    Route::get('/features', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'features']
+        ]);
+    })->name('documentation.features');
+    
+    // Deployment page
+    Route::get('/deployment', function () {
+        return Inertia::render('Documentation', [
+            'useCustomLayout' => true,
+            'params' => ['page' => 'deployment']
+        ]);
+    })->name('documentation.deployment');
+});
+
 // API routes that don't need authentication
 Route::get('/api/books/all-ids', [\App\Http\Controllers\BookController::class, 'getAllBookIds'])->name('api.books.all-ids');
 
