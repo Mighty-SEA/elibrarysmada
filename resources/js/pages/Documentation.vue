@@ -1,10 +1,30 @@
 <template>
   <div class="docs-container">
+    <!-- Tombol Toggle Sidebar (Mobile) -->
+    <button
+      class="sidebar-toggle"
+      @click="isSidebarOpen = !isSidebarOpen"
+      aria-label="Buka menu dokumentasi"
+      v-show="!isSidebarOpen"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+    </button>
+    <!-- Overlay saat sidebar terbuka di mobile -->
+    <div v-if="isSidebarOpen" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
     <!-- Sidebar -->
-    <div class="docs-sidebar">
+    <div class="docs-sidebar" :class="{ show: isSidebarOpen }">
       <div class="docs-logo">
-        <a href="/">MyPerpus</a>
+        <a href="/">{{ appName }}</a>
       </div>
+      <!-- Tombol close di mobile -->
+      <button
+        class="sidebar-toggle close"
+        @click="isSidebarOpen = false"
+        aria-label="Tutup menu dokumentasi"
+        v-show="isSidebarOpen"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
       <ul class="docs-menu">
         <li>
           <Link :href="route('documentation')" class="docs-menu-item" :class="{ active: currentPage === 'overview' }">
@@ -61,12 +81,12 @@
 
     <!-- Main Content -->
     <div class="docs-content">
-      <h1>Dokumentasi Implementasi MyPerpus</h1>
+      <h1>Dokumentasi Implementasi {{ appName }}</h1>
       
       <!-- Konten dinamis sesuai halaman yang dipilih -->
       <div v-if="currentPage === 'overview'" class="docs-page">
         <h2>Overview Implementasi</h2>
-        <p>Dokumentasi ini berisi penjelasan teknis tentang implementasi aplikasi perpustakaan digital MyPerpus.</p>
+        <p>Dokumentasi ini berisi penjelasan teknis tentang implementasi aplikasi perpustakaan digital {{ appName }}.</p>
         
         <h3>Teknologi yang Digunakan</h3>
         <ul>
@@ -78,17 +98,43 @@
         </ul>
         
         <h3>Struktur Implementasi</h3>
-        <p>Implementasi MyPerpus dibagi menjadi beberapa bagian utama:</p>
+        <p>Struktur utama aplikasi {{ appName }} terdiri dari beberapa bagian berikut:</p>
         <ol>
-          <li><strong>Inisialisasi</strong> - Setup project dan konfigurasi awal</li>
-          <li><strong>Arsitektur</strong> - Struktur dan desain arsitektur aplikasi</li>
-          <li><strong>Database</strong> - Schema dan relasi database</li>
-          <li><strong>Backend</strong> - Implementasi server-side</li>
-          <li><strong>Frontend</strong> - Implementasi client-side</li>
-          <li><strong>Fitur</strong> - Detail implementasi fitur-fitur utama</li>
-          <li><strong>Deployment</strong> - Cara menjalankan aplikasi di production</li>
+          <li><strong>Backend (Laravel)</strong>
+            <ul>
+              <li><strong>app/</strong> – Kode inti backend (Controller, Model, Service, Provider, Console, dsb)</li>
+              <li><strong>routes/</strong> – Definisi routing aplikasi (web, auth, console, settings)</li>
+              <li><strong>database/</strong> –
+                <ul>
+                  <li><strong>migrations/</strong> – Struktur dan perubahan skema database</li>
+                  <li><strong>seeders/</strong> – Data awal untuk database</li>
+                  <li><strong>factories/</strong> – Factory untuk generate data dummy</li>
+                </ul>
+              </li>
+              <li><strong>config/</strong> – File konfigurasi aplikasi</li>
+            </ul>
+          </li>
+          <li><strong>Frontend (Vue.js + Inertia)</strong>
+            <ul>
+              <li><strong>resources/js/pages/</strong> – Halaman-halaman utama aplikasi (Dashboard, Buku, Peminjaman, User, dsb)</li>
+              <li><strong>resources/js/components/</strong> – Komponen UI yang dapat digunakan ulang</li>
+              <li><strong>resources/js/layouts/</strong> – Layout global dan per bagian</li>
+              <li><strong>resources/js/composables/</strong> – Fungsi composable/helper untuk Vue</li>
+              <li><strong>resources/js/lib/</strong> – Utility/helper library</li>
+              <li><strong>resources/js/types/</strong> – Definisi tipe TypeScript global</li>
+            </ul>
+          </li>
+          <li><strong>Views (Blade)</strong>
+            <ul>
+              <li><strong>resources/views/</strong> – Template utama Blade (app.blade.php) untuk root aplikasi</li>
+            </ul>
+          </li>
+          <li><strong>Public Assets</strong>
+            <ul>
+              <li><strong>public/</strong> – Asset statis (gambar, icon, manifest, dsb)</li>
+            </ul>
+          </li>
         </ol>
-        
         <p>Silakan navigasi menggunakan menu di sidebar untuk melihat detail implementasi masing-masing bagian.</p>
       </div>
 
@@ -1123,7 +1169,7 @@ const props = defineProps({
       
       <!-- Footer -->
       <footer class="docs-footer">
-        <p>&copy; {{ currentYear }} MyPerpus - Dokumentasi Implementasi</p>
+        <p>&copy; {{ currentYear }} {{ appName }} - Dokumentasi Implementasi</p>
       </footer>
     </div>
   </div>
@@ -1141,6 +1187,12 @@ const currentPage = computed(() => {
   const params = usePage().props.params as { page?: string } || {};
   return params.page || 'overview';
 });
+
+// Ambil nama aplikasi dari props inertia
+const appName = computed(() => (usePage().props.appName as string) || 'MyPerpus');
+
+// State untuk sidebar mobile
+const isSidebarOpen = ref(false);
 
 onMounted(() => {
   // Pastikan body memiliki kelas docs-body
@@ -1330,33 +1382,80 @@ body.docs-body {
   .docs-sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 30;
   }
-  
   .docs-sidebar.show {
     transform: translateX(0);
   }
-  
   .docs-content {
     margin-left: 0;
-    padding: 1.5rem;
+    padding: 3.5rem 1rem 1.5rem 1rem;
+    max-width: 100vw;
+    overflow-x: auto;
   }
-  
+  .docs-content h1 {
+    margin-top: 0.5rem;
+  }
   .sidebar-toggle {
-    display: block;
+    display: flex;
     position: fixed;
     top: 1rem;
     left: 1rem;
-    z-index: 20;
+    z-index: 40;
     background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 0.25rem;
     width: 2.5rem;
     height: 2.5rem;
-    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .sidebar-toggle.close {
+    left: auto;
+    right: 1rem;
+    top: 1rem;
+    background: var(--secondary-color);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    z-index: 20;
+  }
+  /* Tambahan agar lebih rapi di mobile */
+  .docs-content h1,
+  .docs-content h2,
+  .docs-content h3 {
+    text-align: left;
+    word-break: break-word;
+  }
+  .docs-content p,
+  .docs-content ul,
+  .docs-content ol {
+    text-align: justify;
+    margin-bottom: 1.1rem;
+  }
+  .docs-content ul,
+  .docs-content ol {
+    padding-left: 1.1rem;
+  }
+  .docs-content li {
+    margin-bottom: 0.7rem;
+  }
+  .code-block {
+    font-size: 0.95rem;
+    padding: 0.2rem 0.2rem;
+    margin: 1rem 0;
   }
 }
 </style> 
