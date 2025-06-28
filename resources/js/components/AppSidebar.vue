@@ -32,12 +32,12 @@ const adminNavItems: NavItem[] = [
         icon: BookOpen,
     },
     {
-        title: 'Peminjaman',
+        title: 'Sirkulasi Layanan',
         href: '/admin/loans',
         icon: BookMarked,
     },
     {
-        title: 'Permintaan Baru',
+        title: 'Booking Buku',
         href: '/admin/loans/pending',
         icon: Clock,
     },

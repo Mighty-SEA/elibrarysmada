@@ -82,7 +82,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('dashboard'),
   },
   {
-    title: 'Manajemen Peminjaman',
+    title: 'Sirkulasi Layanan',
     href: route('loans.index'),
   },
 ];
@@ -154,13 +154,13 @@ const formatDate = (dateString: string | null) => {
 </script>
 
 <template>
-  <Head title="Manajemen Peminjaman - E-Library SMADA" />
+  <Head title="Sirkulasi Layanan - E-Library SMADA" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 p-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Manajemen Peminjaman</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Sirkulasi Layanan</h1>
           <p class="text-gray-600 mt-1">Daftar semua peminjaman buku di perpustakaan.</p>
         </div>
         <div class="flex space-x-3">

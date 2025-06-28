@@ -77,7 +77,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('dashboard'),
   },
   {
-    title: 'Permintaan Peminjaman',
+    title: 'Booking Buku',
     href: route('loans.pending'),
   },
 ];
@@ -138,20 +138,20 @@ const rejectionForm = useForm({});
 
 // Reject request
 const rejectRequest = (loanId: number) => {
-  if (confirm('Apakah Anda yakin ingin menolak permintaan peminjaman ini?')) {
+  if (confirm('Apakah Anda yakin ingin menolak Booking Buku ini?')) {
     rejectionForm.delete(route('loans.reject', { loan: loanId }));
   }
 };
 </script>
 
 <template>
-  <Head title="Permintaan Peminjaman - E-Library SMADA" />
+  <Head title="Booking Buku - E-Library SMADA" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 p-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Permintaan Peminjaman</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Booking Buku</h1>
           <p class="text-gray-600 mt-1">Daftar buku yang diminta untuk dipinjam dan menunggu persetujuan.</p>
         </div>
         <div class="flex space-x-3">
@@ -202,13 +202,13 @@ const rejectRequest = (loanId: number) => {
         </div>
       </div>
 
-      <!-- Daftar Permintaan Peminjaman -->
+      <!-- Daftar Booking Buku -->
       <div class="bg-white rounded-xl border border-sidebar-border/70 shadow-sm overflow-hidden">
         <div v-if="loans.data.length === 0" class="py-12 px-4 text-center">
           <Clock class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 mb-1">Tidak Ada Permintaan Peminjaman</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-1">Tidak Ada Booking Buku</h3>
           <p class="text-gray-600 max-w-md mx-auto">
-            Saat ini tidak ada permintaan peminjaman buku yang perlu disetujui.
+            Saat ini tidak ada Booking Buku buku yang perlu disetujui.
           </p>
         </div>
 

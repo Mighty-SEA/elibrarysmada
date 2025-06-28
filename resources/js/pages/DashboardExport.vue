@@ -291,7 +291,7 @@ onMounted(() => {
 
             <!-- Table Peminjam - Mulai halaman baru saat cetak -->
             <div class="table-section page-break-before">
-                <h2>Daftar Buku yang Dipinjam</h2>
+                <h2>Sirkulasi Perpustakaan</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
