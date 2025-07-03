@@ -39,7 +39,7 @@ class AdminUserSeeder extends Seeder
         User::create([
             'id' => $tahunSekarang . '003',
             'name' => 'Murid Teladan',
-            'username' => 'murid@perpus.com',
+            'username' => 'murid',
             'password' => Hash::make('password'),
             'role' => 'murid',
             'tahun_angkatan' => $tahunSekarang,
