@@ -455,13 +455,6 @@ const hasRegisterRoute = computed(() => {
                       </div>
                     </li>
                     <li class="flex items-start gap-2">
-                      <MapPin class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span class="text-sm font-medium text-gray-700">Lokasi</span>
-                        <p class="text-gray-800">{{ book.lokasi || 'Tidak tersedia' }}</p>
-                      </div>
-                    </li>
-                    <li class="flex items-start gap-2">
                       <BookOpen class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <span class="text-sm font-medium text-gray-700">Eksemplar Buku</span>
