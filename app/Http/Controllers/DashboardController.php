@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with('user')->get();
         $users = $userQuery->get();
 
-        $totalBooks = $bookQuery->sum('eksemplar');
+        $totalBooks = $bookQuery->count();
         $totalLoans = $loans->count();
         $pendingRequests = $pendingQuery->count();
         $totalUsers = $users->count();
@@ -136,8 +136,10 @@ class DashboardController extends Controller
             }
         }
 
+        $totalEdisi = $bookQuery->sum('eksemplar');
         return Inertia::render('Dashboard', [
             'totalBooks' => $totalBooks,
+            'totalEdisi' => $totalEdisi,
             'totalLoans' => $totalLoans,
             'pendingRequests' => $pendingRequests,
             'totalUsers' => $totalUsers,
@@ -177,7 +179,7 @@ class DashboardController extends Controller
         $loans = $loanQuery->whereIn('status', ['dipinjam', 'terlambat', 'dikembalikan'])->with(['user', 'book'])->get();
         $users = $userQuery->get();
 
-        $totalBooks = $bookQuery->sum('eksemplar');
+        $totalBooks = $bookQuery->count();
         $totalLoans = $loans->count();
         $pendingRequests = $pendingQuery->count();
         $totalUsers = $users->count();

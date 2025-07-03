@@ -30,6 +30,7 @@ const booksDeleted = page.props.booksDeleted as number | null;
 const showMonthlyCharts = page.props.showMonthlyCharts as boolean;
 const loanChartMonthly = page.props.loanChartMonthly as ChartData || {};
 const userChartMonthly = page.props.userChartMonthly as ChartData || {};
+const totalEdisi = page.props.totalEdisi ?? 0;
 
 const startDate = ref(page.props.startDate || '');
 const endDate = ref(page.props.endDate || '');
@@ -193,7 +194,7 @@ function exportPDF() {
                             <Book class="h-6 w-6 text-blue-500" />
                         </div>
                         <p class="text-3xl font-bold text-gray-900">{{ totalBooks }}</p>
-                        <p class="text-sm text-gray-500 mt-2">Tersedia di perpustakaan</p>
+                        <p class="text-sm text-gray-500 mt-2">Jumlah seluruh eksemplar: {{ totalEdisi }}</p>
                         <template v-if="startDate || endDate">
                             <p class="text-xs mt-1 text-gray-600">
                                 <span v-if="booksAdded !== null">+ {{ booksAdded }} buku ditambah</span>
