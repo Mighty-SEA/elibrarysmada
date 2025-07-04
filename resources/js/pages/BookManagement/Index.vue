@@ -5,6 +5,12 @@
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl md:text-2xl font-bold">Manajemen Buku</h1>
         <div class="flex flex-wrap gap-1 sm:gap-2">
+          <Link :href="route('books.archives')">
+            <Button type="button" variant="outline" size="sm" class="text-xs sm:text-sm">
+              <span class="mr-1">🗄️</span>
+              <span class="hidden sm:inline">Lihat</span> Arsip
+            </Button>
+          </Link>
           <Dialog>
             <DialogTrigger as-child>
               <Button type="button" size="sm" class="text-xs sm:text-sm">Import</Button>

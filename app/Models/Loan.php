@@ -32,27 +32,27 @@ class Loan extends Model
     ];
 
     /**
-     * Get the user who borrowed the book
+     * Get the user who borrowed the book (include soft deleted)
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     /**
-     * Get the book that was borrowed
+     * Get the book that was borrowed (include soft deleted)
      */
     public function book(): BelongsTo
     {
-        return $this->belongsTo(Buku::class, 'book_id');
+        return $this->belongsTo(Buku::class, 'book_id')->withTrashed();
     }
 
     /**
-     * Get the admin who approved the loan
+     * Get the admin who approved the loan (include soft deleted)
      */
     public function approver(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_by');
+        return $this->belongsTo(User::class, 'approval_by')->withTrashed();
     }
 
     /**

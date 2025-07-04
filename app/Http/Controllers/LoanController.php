@@ -20,7 +20,17 @@ class LoanController extends Controller
         $status = $request->query('status', 'all');
         $search = $request->input('search', '');
         
-        $query = Loan::with(['user', 'book', 'approver'])
+        $query = Loan::with([
+                'user' => function($query) {
+                    $query->withTrashed();
+                }, 
+                'book' => function($query) {
+                    $query->withTrashed();
+                }, 
+                'approver' => function($query) {
+                    $query->withTrashed();
+                }
+            ])
             ->orderBy('created_at', 'desc');
             
         if ($status !== 'all') {
@@ -30,14 +40,14 @@ class LoanController extends Controller
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->whereHas('book', function($bookQuery) use ($search) {
-                    $bookQuery->where('judul', 'like', "%{$search}%");
+                    $bookQuery->withTrashed()->where('judul', 'like', "%{$search}%");
                 })
                 ->orWhereHas('user', function($userQuery) use ($search) {
-                    $userQuery->where('name', 'like', "%{$search}%")
+                    $userQuery->withTrashed()->where('name', 'like', "%{$search}%")
                            ->orWhere('username', 'like', "%{$search}%");
                 })
                 ->orWhereHas('approver', function($approverQuery) use ($search) {
-                    $approverQuery->where('name', 'like', "%{$search}%");
+                    $approverQuery->withTrashed()->where('name', 'like', "%{$search}%");
                 });
             });
         }
@@ -46,8 +56,8 @@ class LoanController extends Controller
         
         // Format data for the frontend
         $loans->through(function ($loan) {
-            $loan->book_title = $loan->book->judul;
-            $loan->username = $loan->user->name;
+            $loan->book_title = $loan->book ? $loan->book->judul : '[Buku Telah Dihapus]';
+            $loan->username = $loan->user ? $loan->user->name : '[Anggota Telah Dihapus]';
             $loan->approver_name = $loan->approver ? $loan->approver->name : null;
             
             // Check if loan is overdue
@@ -84,17 +94,24 @@ class LoanController extends Controller
     {
         $search = $request->input('search', '');
         
-        $query = Loan::with(['user', 'book'])
+        $query = Loan::with([
+                'user' => function($query) {
+                    $query->withTrashed();
+                }, 
+                'book' => function($query) {
+                    $query->withTrashed();
+                }
+            ])
             ->where('status', 'belum_diambil')
             ->orderBy('created_at', 'desc');
             
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->whereHas('book', function($bookQuery) use ($search) {
-                    $bookQuery->where('judul', 'like', "%{$search}%");
+                    $bookQuery->withTrashed()->where('judul', 'like', "%{$search}%");
                 })
                 ->orWhereHas('user', function($userQuery) use ($search) {
-                    $userQuery->where('name', 'like', "%{$search}%")
+                    $userQuery->withTrashed()->where('name', 'like', "%{$search}%")
                            ->orWhere('username', 'like', "%{$search}%");
                 });
             });
@@ -104,8 +121,8 @@ class LoanController extends Controller
             
         // Format data for the frontend
         $loans->through(function ($loan) {
-            $loan->book_title = $loan->book->judul;
-            $loan->username = $loan->user->name;
+            $loan->book_title = $loan->book ? $loan->book->judul : '[Buku Telah Dihapus]';
+            $loan->username = $loan->user ? $loan->user->name : '[Anggota Telah Dihapus]';
             return $loan;
         });
 
@@ -124,17 +141,24 @@ class LoanController extends Controller
     {
         $search = $request->input('search', '');
         
-        $query = Loan::with(['user', 'book'])
+        $query = Loan::with([
+                'user' => function($query) {
+                    $query->withTrashed();
+                }, 
+                'book' => function($query) {
+                    $query->withTrashed();
+                }
+            ])
             ->whereIn('status', ['dipinjam', 'terlambat'])
             ->orderBy('created_at', 'desc');
             
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->whereHas('book', function($bookQuery) use ($search) {
-                    $bookQuery->where('judul', 'like', "%{$search}%");
+                    $bookQuery->withTrashed()->where('judul', 'like', "%{$search}%");
                 })
                 ->orWhereHas('user', function($userQuery) use ($search) {
-                    $userQuery->where('name', 'like', "%{$search}%")
+                    $userQuery->withTrashed()->where('name', 'like', "%{$search}%")
                            ->orWhere('username', 'like', "%{$search}%");
                 });
             });
@@ -144,8 +168,8 @@ class LoanController extends Controller
             
         // Format data for the frontend
         $loans->through(function ($loan) {
-            $loan->book_title = $loan->book->judul;
-            $loan->username = $loan->user->name;
+            $loan->book_title = $loan->book ? $loan->book->judul : '[Buku Telah Dihapus]';
+            $loan->username = $loan->user ? $loan->user->name : '[Anggota Telah Dihapus]';
             
             // Check if loan is overdue
             if ($loan->status === 'dipinjam' && $loan->due_date && Carbon::now()->greaterThan($loan->due_date)) {
@@ -181,13 +205,17 @@ class LoanController extends Controller
         $userId = Auth::id();
         $search = $request->input('search', '');
         
-        $query = Loan::with('book')
+        $query = Loan::with([
+                'book' => function($query) {
+                    $query->withTrashed();
+                }
+            ])
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc');
             
         if ($search) {
             $query->whereHas('book', function($bookQuery) use ($search) {
-                $bookQuery->where('judul', 'like', "%{$search}%");
+                $bookQuery->withTrashed()->where('judul', 'like', "%{$search}%");
             });
         }
         
@@ -195,8 +223,8 @@ class LoanController extends Controller
             
         // Format data for the frontend
         $loans->through(function ($loan) {
-            $loan->book_title = $loan->book->judul;
-            $loan->book_cover = $loan->book->cover_url;
+            $loan->book_title = $loan->book ? $loan->book->judul : '[Buku Telah Dihapus]';
+            $loan->book_cover = $loan->book ? $loan->book->cover_url : null;
             
             // Check if loan is overdue
             if ($loan->status === 'dipinjam' && $loan->due_date && Carbon::now()->greaterThan($loan->due_date)) {

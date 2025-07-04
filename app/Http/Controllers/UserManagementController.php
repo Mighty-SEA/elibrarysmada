@@ -214,4 +214,50 @@ class UserManagementController extends Controller
 
         return to_route('user-management.index')->with('message', 'User berhasil dihapus');
     }
+
+    /**
+     * Menampilkan daftar user yang telah dihapus (diarsipkan)
+     *
+     * @param Request $request
+     * @return \Inertia\Response
+     */
+    public function archives(Request $request)
+    {
+        $search = $request->input('search', '');
+        
+        $query = User::onlyTrashed()->orderBy('deleted_at', 'desc');
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%")
+                  ->orWhere('jurusan', 'like', "%{$search}%");
+            });
+        }
+        
+        $users = $query->paginate(10)->withQueryString();
+        
+        return Inertia::render('UserManagement/Archives', [
+            'users' => $users,
+            'filters' => [
+                'search' => $search
+            ]
+        ]);
+    }
+    
+    /**
+     * Memulihkan user yang telah dihapus
+     *
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function restore($id)
+    {
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore();
+        
+        return to_route('user-management.archives')->with('message', 'User berhasil dipulihkan');
+    }
 } 

@@ -320,4 +320,65 @@ class BookController extends Controller
             return response()->json(['ids' => [], 'error' => 'Failed to retrieve book IDs'], 500);
         }
     }
+
+    /**
+     * Menampilkan daftar buku yang telah dihapus (diarsipkan)
+     *
+     * @param Request $request
+     * @return \Inertia\Response
+     */
+    public function archives(Request $request)
+    {
+        $perPage = 10; // Jumlah item per halaman
+        $search = $request->input('search', '');
+        
+        $query = Buku::onlyTrashed();
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('penulis', 'like', "%{$search}%")
+                  ->orWhere('penerbit', 'like', "%{$search}%")
+                  ->orWhere('tahun_terbit', 'like', "%{$search}%")
+                  ->orWhere('isbn', 'like', "%{$search}%")
+                  ->orWhere('no_panggil', 'like', "%{$search}%")
+                  ->orWhere('kategori', 'like', "%{$search}%");
+            });
+        }
+        
+        $books = $query->orderBy('deleted_at', 'desc')->paginate($perPage)->withQueryString();
+        
+        // Tambahkan cover_url ke setiap buku
+        $books->through(function ($book) {
+            if ($book->cover_type === 'url') {
+                $book->cover_url = $book->cover;
+            } else if ($book->cover) {
+                $book->cover_url = '/storage/' . $book->cover;
+            } else {
+                $book->cover_url = null;
+            }
+            return $book;
+        });
+        
+        return Inertia::render('BookManagement/Archives', [
+            'books' => $books,
+            'filters' => [
+                'search' => $search
+            ]
+        ]);
+    }
+    
+    /**
+     * Memulihkan buku yang telah dihapus
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function restore($id)
+    {
+        $book = Buku::onlyTrashed()->findOrFail($id);
+        $book->restore();
+        
+        return redirect()->route('books.archives')->with('success', 'Buku berhasil dipulihkan.');
+    }
 } 

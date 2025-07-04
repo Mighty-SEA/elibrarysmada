@@ -95,12 +95,20 @@ const deleteUser = (id: number) => {
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-bold">Manajemen Anggota</h1>
-                <Link :href="route('user-management.create')">
-                    <Button>
-                        <UserPlus class="mr-2 h-4 w-4" />
-                        Tambah Anggota
-                    </Button>
-                </Link>
+                <div class="flex space-x-2">
+                    <Link :href="route('user-management.archives')">
+                        <Button variant="outline">
+                            <span class="mr-2">🗄️</span>
+                            Lihat Arsip
+                        </Button>
+                    </Link>
+                    <Link :href="route('user-management.create')">
+                        <Button>
+                            <UserPlus class="mr-2 h-4 w-4" />
+                            Tambah Anggota
+                        </Button>
+                    </Link>
+                </div>
             </div>
             
             <!-- Komponen Pencarian -->
