@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -18,7 +19,7 @@ class BookController extends Controller
         $perPage = 10; // Jumlah item per halaman
         $search = $request->input('search', '');
         
-        $query = Buku::query();
+        $query = Buku::query()->select('id', 'judul', 'penulis', 'penerbit', 'tahun_terbit', 'isbn', 'no_panggil', 'kategori', 'eksemplar', 'ketersediaan', 'asal_koleksi', 'kota_terbit', 'cover', 'cover_type');
         
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -34,8 +35,8 @@ class BookController extends Controller
         
         $books = $query->paginate($perPage)->withQueryString();
         
-        // Tambahkan cover_url ke setiap buku
-        $books->through(function ($book) {
+        // Tambahkan cover_url ke setiap buku dengan cara yang lebih efisien
+        foreach ($books as $book) {
             if ($book->cover_type === 'url') {
                 $book->cover_url = $book->cover;
             } else if ($book->cover) {
@@ -43,8 +44,7 @@ class BookController extends Controller
             } else {
                 $book->cover_url = null;
             }
-            return $book;
-        });
+        }
         
         return Inertia::render('BookManagement/Index', [
             'books' => $books,
@@ -209,9 +209,37 @@ class BookController extends Controller
 
     public function home(Request $request)
     {
+        $perPage = 20; // Jumlah buku per halaman
         $query = $request->query('search', '');
+        $categories = $request->query('categories', '');
         
-        $books = Buku::all()->map(function ($book) {
+        $booksQuery = Buku::query()->select('id', 'judul', 'penulis', 'penerbit', 'tahun_terbit', 'isbn', 'kategori', 'eksemplar', 'ketersediaan', 'cover', 'cover_type');
+        
+        // Filter berdasarkan pencarian
+        if ($query) {
+            $booksQuery->where(function($q) use ($query) {
+                $q->where('judul', 'like', "%{$query}%")
+                  ->orWhere('penulis', 'like', "%{$query}%")
+                  ->orWhere('penerbit', 'like', "%{$query}%")
+                  ->orWhere('isbn', 'like', "%{$query}%")
+                  ->orWhere('kategori', 'like', "%{$query}%");
+            });
+        }
+        
+        // Filter berdasarkan kategori jika ada
+        if ($categories) {
+            $categoryArray = explode(',', $categories);
+            $booksQuery->where(function($q) use ($categoryArray) {
+                foreach ($categoryArray as $category) {
+                    $q->orWhere('kategori', 'like', "%{$category}%");
+                }
+            });
+        }
+        
+        $books = $booksQuery->paginate($perPage)->withQueryString();
+        
+        // Proses data buku untuk frontend
+        foreach ($books as $book) {
             if ($book->cover_type === 'url') {
                 $book->cover_url = $book->cover;
             } else if ($book->cover) {
@@ -221,12 +249,25 @@ class BookController extends Controller
             }
             // Kategori bisa lebih dari satu, dipisah koma
             $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
-            return $book;
-        });
+        }
+        
+        // Ambil semua kategori unik untuk filter sidebar
+        $allCategories = DB::table('books')
+                            ->select(\DB::raw('DISTINCT kategori'))
+                            ->whereNotNull('kategori')
+                            ->get()
+                            ->flatMap(function($item) {
+                                return array_map('trim', explode(',', $item->kategori));
+                            })
+                            ->unique()
+                            ->values()
+                            ->toArray();
         
         return Inertia::render('Home', [
             'books' => $books,
             'searchQuery' => $query,
+            'selectedCategories' => $categories ? explode(',', $categories) : [],
+            'allCategories' => $allCategories
         ]);
     }
 
@@ -276,65 +317,85 @@ class BookController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        try {
-            $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'exists:books,id'
-            ]);
-
-            \Illuminate\Support\Facades\Log::info('Bulk delete request received', ['ids' => $request->ids]);
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:books,id',
+        ]);
+        
+        $ids = $validated['ids'];
+        $chunkSize = 100; // Proses 100 buku sekaligus
+        $deleteCount = 0;
+        
+        // Hapus cover file untuk buku-buku dengan cover upload (jika ada)
+        // Proses ini dilakukan dalam chunk untuk mencegah overload
+        foreach (array_chunk($ids, $chunkSize) as $chunk) {
+            $books = Buku::whereIn('id', $chunk)
+                      ->where('cover_type', '!=', 'url')
+                      ->whereNotNull('cover')
+                      ->get(['id', 'cover']);
             
-            $count = Buku::whereIn('id', $request->ids)->count();
-            Buku::whereIn('id', $request->ids)->delete();
+            foreach ($books as $book) {
+                if ($book->cover) {
+                    Storage::disk('public')->delete($book->cover);
+                }
+            }
             
-            \Illuminate\Support\Facades\Log::info('Bulk delete successful', ['count' => $count]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => $count . ' buku berhasil diarsipkan.'
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error in bulkDelete: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengarsipkan buku: ' . $e->getMessage()
-            ], 500);
+            // Hapus buku dalam chunk
+            $deleted = Buku::whereIn('id', $chunk)->delete();
+            $deleteCount += $deleted;
         }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "{$deleteCount} buku berhasil dihapus.",
+        ]);
     }
     
     public function bulkUpdateJumlah(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'exists:books,id',
-            'eksemplar' => 'required|integer|min:0'
+            'ids.*' => 'integer|exists:books,id',
+            'eksemplar' => 'required|integer|min:0',
         ]);
         
-        $count = Buku::whereIn('id', $request->ids)->count();
-        Buku::whereIn('id', $request->ids)->update([
-            'eksemplar' => $request->eksemplar,
-            'ketersediaan' => $request->eksemplar
-        ]);
+        $ids = $validated['ids'];
+        $eksemplar = $validated['eksemplar'];
+        $chunkSize = 100; // Proses 100 buku sekaligus
+        $updateCount = 0;
+        
+        // Proses update dalam chunk
+        foreach (array_chunk($ids, $chunkSize) as $chunk) {
+            $affected = Buku::whereIn('id', $chunk)
+                ->update([
+                    'eksemplar' => $eksemplar,
+                    'ketersediaan' => $eksemplar, // Reset ketersediaan juga
+                ]);
+            
+            $updateCount += $affected;
+        }
         
         return response()->json([
             'success' => true,
-            'message' => 'Ekselampar ' . $count . ' buku berhasil diperbarui.'
+            'message' => "{$updateCount} buku berhasil diupdate.",
         ]);
     }
 
     public function getAllBookIds()
     {
-        try {
-            $ids = Buku::pluck('id')->values()->toArray();
-            return response()->json(['ids' => $ids]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error in getAllBookIds: ' . $e->getMessage());
-            return response()->json(['ids' => [], 'error' => 'Failed to retrieve book IDs'], 500);
-        }
+        // Batasi jumlah maksimum ID yang diambil untuk mencegah overload server
+        $maxBooks = 1000;
+        $ids = Buku::select('id')->limit($maxBooks)->pluck('id')->toArray();
+        
+        $totalBooks = Buku::count();
+        
+        $response = [
+            'ids' => $ids,
+            'total' => $totalBooks,
+            'limited' => $totalBooks > $maxBooks
+        ];
+        
+        return response()->json($response);
     }
 
     /**

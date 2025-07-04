@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { LoaderCircle, Save, Plus, Upload, X, Image as ImageIcon } from 'lucide-vue-next';
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
@@ -117,8 +117,16 @@ onUnmounted(() => {
   }
 });
 
+// Watch perubahan pada eksemplar untuk menyesuaikan ketersediaan
+watch(() => form.eksemplar, (newValue) => {
+  form.ketersediaan = newValue;
+});
+
 const submit = (addMore = false) => {
   addAnother.value = addMore;
+  
+  // Pastikan ketersediaan sama dengan eksemplar
+  form.ketersediaan = form.eksemplar;
   
   form.post(route('books.store'), {
     forceFormData: true,
@@ -194,17 +202,13 @@ const submit = (addMore = false) => {
               <div class="grid gap-1">
                 <Label for="eksemplar" class="text-sm">Eksemplar</Label>
                 <Input id="eksemplar" v-model="form.eksemplar" type="number" class="h-8" />
+                <small class="text-xs text-gray-500">Ketersediaan akan otomatis sama dengan jumlah eksemplar.</small>
                 <InputError :message="form.errors.eksemplar" class="text-xs" />
               </div>
             </div>
             
             <!-- Kolom 2 -->
             <div class="space-y-2">
-              <div class="grid gap-1">
-                <Label for="ketersediaan" class="text-sm">Ketersediaan</Label>
-                <Input id="ketersediaan" v-model="form.ketersediaan" type="number" class="h-8" />
-                <InputError :message="form.errors.ketersediaan" class="text-xs" />
-              </div>
               <div class="grid gap-1">
                 <Label for="no_panggil" class="text-sm">No. Panggil</Label>
                 <Input id="no_panggil" v-model="form.no_panggil" type="text" class="h-8" />

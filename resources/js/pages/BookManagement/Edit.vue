@@ -136,7 +136,29 @@ form.transform(data => ({
   kategori: form.kategori ?? props.book.kategori ?? '',
 }));
 
+// Watch perubahan pada eksemplar untuk menyesuaikan ketersediaan
+watch(() => form.eksemplar, (newValue) => {
+  // Jika eksemplar dikurangi
+  if (Number(newValue) < Number(props.book.eksemplar)) {
+    // Hitung selisih buku yang sedang dipinjam
+    const borrowedBooks = Number(props.book.eksemplar) - Number(props.book.ketersediaan);
+    
+    // Ketersediaan baru = Eksemplar baru - buku yang sedang dipinjam
+    // Pastikan tidak negatif
+    form.ketersediaan = Math.max(Number(newValue) - borrowedBooks, 0);
+  } else {
+    // Jika eksemplar ditambah, tambahkan selisih ke ketersediaan
+    const additionalBooks = Number(newValue) - Number(props.book.eksemplar);
+    form.ketersediaan = Number(props.book.ketersediaan) + additionalBooks;
+  }
+});
+
 function submit() {
+  // Pastikan form.ketersediaan tidak melebihi eksemplar
+  if (Number(form.ketersediaan) > Number(form.eksemplar)) {
+    form.ketersediaan = form.eksemplar;
+  }
+  
   form.post(route('books.update', props.book.id), {
     forceFormData: true,
     preserveScroll: true,
@@ -184,17 +206,13 @@ function submit() {
               <div class="grid gap-1">
                 <Label for="eksemplar" class="text-sm">Eksemplar</Label>
                 <Input id="eksemplar" v-model="form.eksemplar" type="number" class="h-8" />
+                <small class="text-xs text-gray-500">Ketersediaan akan otomatis disesuaikan berdasarkan jumlah eksemplar. Ketersediaan saat ini: {{ props.book.ketersediaan }} dari {{ props.book.eksemplar }} buku.</small>
                 <InputError :message="form.errors.eksemplar" class="text-xs" />
               </div>
             </div>
             
             <!-- Kolom 2 -->
             <div class="space-y-2">
-              <div class="grid gap-1">
-                <Label for="ketersediaan" class="text-sm">Ketersediaan</Label>
-                <Input id="ketersediaan" v-model="form.ketersediaan" type="number" class="h-8" />
-                <InputError :message="form.errors.ketersediaan" class="text-xs" />
-              </div>
               <div class="grid gap-1">
                 <Label for="no_panggil" class="text-sm">No. Panggil</Label>
                 <Input id="no_panggil" v-model="form.no_panggil" type="text" class="h-8" />

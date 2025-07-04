@@ -175,7 +175,6 @@
               <TableHead>Asal Koleksi</TableHead>
               <TableHead>Kota Terbit</TableHead>
               <TableHead>Eksemplar</TableHead>
-              <TableHead>Jumlah</TableHead>
               <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -203,7 +202,6 @@
               <TableCell>{{ book.asal_koleksi }}</TableCell>
               <TableCell>{{ book.kota_terbit }}</TableCell>
               <TableCell>{{ book.eksemplar }}</TableCell>
-              <TableCell>{{ book.jumlah }}</TableCell>
               <TableCell class="text-right">
                 <div class="flex justify-end space-x-2">
                   <Link :href="route('books.edit', book.id)">
@@ -361,6 +359,11 @@ function changePage(page: number) {
     preserveScroll: true,
     onFinish: () => {
       isPageLoading.value = false;
+    },
+    onError: () => {
+      isPageLoading.value = false;
+      // Jika terjadi error, tampilkan pesan
+      alert('Terjadi kesalahan saat memuat halaman. Silakan coba lagi.');
     }
   });
 }
@@ -407,9 +410,14 @@ function selectAllBooks() {
     fetch('/api/books/all-ids')
       .then(response => response.json())
       .then(data => {
-        allBookIds.value = data.ids;
-        selectedBooks.value = [...data.ids];
+        allBookIds.value = data.ids || [];
+        selectedBooks.value = [...allBookIds.value];
         isLoadingAllIds.value = false;
+        
+        // Jika data dibatasi, tampilkan pesan
+        if (data.limited) {
+          alert(`Hanya ${data.ids.length} dari total ${data.total} buku yang dipilih. Sistem membatasi jumlah maksimal yang dapat dipilih untuk kinerja yang lebih baik.`);
+        }
       })
       .catch(error => {
         console.error('Error fetching all book IDs:', error);
@@ -425,12 +433,7 @@ function bulkDelete() {
   
   isBulkProcessing.value = true;
   
-  // Debug URL dan CSRF token
-  console.log('URL untuk bulk delete:', '/admin/books/bulk-delete');
-  console.log('CSRF Token:', csrf);
-  console.log('Selected Book IDs:', selectedBooks.value);
-  
-  // Menggunakan URL absolut
+  // Menggunakan URL absolut dengan batasan limit waktu (timeout)
   axios({
     method: 'delete',
     url: '/admin/books/bulk-delete',
@@ -441,7 +444,8 @@ function bulkDelete() {
       'X-CSRF-TOKEN': csrf,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
-    }
+    },
+    timeout: 30000 // 30 detik timeout
   })
   .then(response => {
     selectedBooks.value = [];
@@ -454,7 +458,9 @@ function bulkDelete() {
   .catch(error => {
     console.error('Error deleting books:', error);
     console.log('Error details:', error.response || error);
-    alert('Gagal menghapus buku. Silakan coba lagi.');
+    alert('Gagal menghapus buku. Silakan coba lagi. ' + 
+          (error.response?.data?.message || 
+          (error.code === 'ECONNABORTED' ? 'Waktu request habis, server mungkin sibuk.' : '')));
   })
   .finally(() => {
     isBulkProcessing.value = false;
@@ -473,7 +479,8 @@ function bulkUpdateEksemplar() {
   }, {
     headers: {
       'X-CSRF-TOKEN': csrf
-    }
+    },
+    timeout: 30000 // 30 detik timeout
   })
   .then(() => {
     selectedBooks.value = [];
@@ -482,7 +489,8 @@ function bulkUpdateEksemplar() {
   })
   .catch(error => {
     console.error('Error updating book quantity:', error);
-    alert('Gagal mengupdate eksemplar buku. Silakan coba lagi.');
+    alert('Gagal mengupdate eksemplar buku. Silakan coba lagi. ' + 
+          (error.code === 'ECONNABORTED' ? 'Waktu request habis, server mungkin sibuk.' : ''));
   })
   .finally(() => {
     isBulkProcessing.value = false;
