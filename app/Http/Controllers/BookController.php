@@ -276,18 +276,34 @@ class BookController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:books,id'
-        ]);
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:books,id'
+            ]);
 
-        $count = Buku::whereIn('id', $request->ids)->count();
-        Buku::whereIn('id', $request->ids)->delete();
-        
-        return response()->json([
-            'success' => true,
-            'message' => $count . ' buku berhasil dihapus.'
-        ]);
+            \Illuminate\Support\Facades\Log::info('Bulk delete request received', ['ids' => $request->ids]);
+            
+            $count = Buku::whereIn('id', $request->ids)->count();
+            Buku::whereIn('id', $request->ids)->delete();
+            
+            \Illuminate\Support\Facades\Log::info('Bulk delete successful', ['count' => $count]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => $count . ' buku berhasil diarsipkan.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in bulkDelete: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengarsipkan buku: ' . $e->getMessage()
+            ], 500);
+        }
     }
     
     public function bulkUpdateJumlah(Request $request)

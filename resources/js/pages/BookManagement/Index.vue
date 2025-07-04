@@ -425,23 +425,36 @@ function bulkDelete() {
   
   isBulkProcessing.value = true;
   
-  axios.delete('/admin/books/bulk-delete', {
+  // Debug URL dan CSRF token
+  console.log('URL untuk bulk delete:', '/admin/books/bulk-delete');
+  console.log('CSRF Token:', csrf);
+  console.log('Selected Book IDs:', selectedBooks.value);
+  
+  // Menggunakan URL absolut
+  axios({
+    method: 'delete',
+    url: '/admin/books/bulk-delete',
     data: {
       ids: selectedBooks.value
     },
     headers: {
-      'X-CSRF-TOKEN': csrf
+      'X-CSRF-TOKEN': csrf,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
     }
   })
-  .then(() => {
+  .then(response => {
     selectedBooks.value = [];
     confirmBulkDelete.value = false;
+    // Tampilkan notifikasi sukses
+    alert(response.data.message || 'Buku berhasil diarsipkan.');
     // Refresh halaman setelah operasi berhasil
     window.location.reload();
   })
   .catch(error => {
-    console.error('Error deleting books:', error);
-    alert('Gagal menghapus buku. Silakan coba lagi.');
+    console.error('Error archiving books:', error);
+    console.log('Error details:', error.response || error);
+    alert('Gagal mengarsipkan buku. Silakan coba lagi.');
   })
   .finally(() => {
     isBulkProcessing.value = false;

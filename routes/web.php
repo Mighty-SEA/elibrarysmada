@@ -101,6 +101,11 @@ Route::prefix('documentation')->group(function () {
 // API routes that don't need authentication
 Route::get('/api/books/all-ids', [\App\Http\Controllers\BookController::class, 'getAllBookIds'])->name('api.books.all-ids');
 
+// Tambahkan route tambahan untuk bulk-delete
+Route::delete('/admin/books/bulk-delete', [BookController::class, 'bulkDelete'])
+    ->middleware(['auth', 'verified', CheckUserType::class.':admin'])
+    ->name('books.bulk-delete.direct');
+
 // Route untuk administrasi
 Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
