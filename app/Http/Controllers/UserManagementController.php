@@ -62,7 +62,7 @@ class UserManagementController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', Password::defaults()],
             'role' => 'required|in:administrasi,guru,murid',
             'tahun_angkatan' => 'nullable|numeric',
             'jenis_kelamin' => 'nullable|string|max:20',
@@ -161,7 +161,7 @@ class UserManagementController extends Controller
             // We need to create a new user and delete the old one since we're changing the primary key
             if ($request->filled('password')) {
                 $request->validate([
-                    'password' => ['required', 'confirmed', Password::defaults()],
+                    'password' => ['required', Password::defaults()],
                 ]);
                 $data['password'] = Hash::make($request->password);
             } else {
@@ -188,7 +188,7 @@ class UserManagementController extends Controller
             // Normal update without changing ID
             if ($request->filled('password')) {
                 $request->validate([
-                    'password' => ['required', 'confirmed', Password::defaults()],
+                    'password' => ['required', Password::defaults()],
                 ]);
                 $data['password'] = Hash::make($request->password);
             }
