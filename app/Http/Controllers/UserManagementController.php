@@ -216,12 +216,12 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Menampilkan daftar user yang telah dihapus (diarsipkan)
+     * Menampilkan daftar user yang telah dihapus (sampah)
      *
      * @param Request $request
      * @return \Inertia\Response
      */
-    public function archives(Request $request)
+    public function recycle(Request $request)
     {
         $search = $request->input('search', '');
         
@@ -239,7 +239,7 @@ class UserManagementController extends Controller
         
         $users = $query->paginate(10)->withQueryString();
         
-        return Inertia::render('UserManagement/Archives', [
+        return Inertia::render('UserManagement/Recycle', [
             'users' => $users,
             'filters' => [
                 'search' => $search
@@ -258,6 +258,6 @@ class UserManagementController extends Controller
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
         
-        return to_route('user-management.archives')->with('message', 'User berhasil dipulihkan');
+        return to_route('user-management.recycle')->with('message', 'User berhasil dipulihkan');
     }
 } 

@@ -96,10 +96,10 @@ const deleteUser = (id: number) => {
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-bold">Manajemen Anggota</h1>
                 <div class="flex space-x-2">
-                    <Link :href="route('user-management.archives')">
+                    <Link :href="route('user-management.recycle')">
                         <Button variant="outline">
-                            <span class="mr-2">🗄️</span>
-                            Lihat Arsip
+                            <span class="mr-2">🗑️</span>
+                            Lihat Sampah
                         </Button>
                     </Link>
                     <Link :href="route('user-management.create')">

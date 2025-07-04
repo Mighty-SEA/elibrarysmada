@@ -5,10 +5,10 @@
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl md:text-2xl font-bold">Manajemen Buku</h1>
         <div class="flex flex-wrap gap-1 sm:gap-2">
-          <Link :href="route('books.archives')">
+          <Link :href="route('books.recycle')">
             <Button type="button" variant="outline" size="sm" class="text-xs sm:text-sm">
-              <span class="mr-1">🗄️</span>
-              <span class="hidden sm:inline">Lihat</span> Arsip
+              <span class="mr-1">🗑️</span>
+              <span class="hidden sm:inline">Lihat</span> Sampah
             </Button>
           </Link>
           <Dialog>
@@ -119,7 +119,7 @@
             :disabled="isBulkProcessing"
           >
             <Trash2 class="h-4 w-4 mr-1" />
-            Archives
+            Hapus
           </Button>
           
           <!-- Batalkan Pilihan -->
@@ -239,16 +239,16 @@
   <Dialog v-model:open="confirmBulkDelete">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Konfirmasi Archives</DialogTitle>
+        <DialogTitle>Konfirmasi Hapus</DialogTitle>
         <DialogDescription>
-          Anda yakin ingin mengarsipkan {{ selectedBooks.length }} buku yang dipilih? Tindakan ini tidak dapat dibatalkan.
+          Anda yakin ingin menghapus {{ selectedBooks.length }} buku yang dipilih? Tindakan ini tidak dapat dibatalkan.
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
         <Button variant="destructive" @click="bulkDelete" :disabled="isBulkProcessing">
           <LoaderCircle v-if="isBulkProcessing" class="mr-2 h-4 w-4 animate-spin" />
           <Trash2 v-else class="mr-2 h-4 w-4" />
-          Archives
+          Hapus
         </Button>
         <Button variant="outline" @click="confirmBulkDelete = false" :disabled="isBulkProcessing">Batal</Button>
       </DialogFooter>
@@ -337,7 +337,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const deleteBook = (id: number) => {
-  if (confirm('Yakin ingin mengarsipkan buku ini?')) {
+  if (confirm('Yakin ingin menghapus buku ini?')) {
     router.delete(route('books.destroy', id));
   }
 };
@@ -447,14 +447,14 @@ function bulkDelete() {
     selectedBooks.value = [];
     confirmBulkDelete.value = false;
     // Tampilkan notifikasi sukses
-    alert(response.data.message || 'Buku berhasil diarsipkan.');
+    alert(response.data.message || 'Buku berhasil dihapus.');
     // Refresh halaman setelah operasi berhasil
     window.location.reload();
   })
   .catch(error => {
-    console.error('Error archiving books:', error);
+    console.error('Error deleting books:', error);
     console.log('Error details:', error.response || error);
-    alert('Gagal mengarsipkan buku. Silakan coba lagi.');
+    alert('Gagal menghapus buku. Silakan coba lagi.');
   })
   .finally(() => {
     isBulkProcessing.value = false;

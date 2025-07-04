@@ -116,15 +116,15 @@ Route::prefix('admin')->middleware(['auth', 'verified', CheckUserType::class.':a
         'user-management' => 'user'
     ]);
     
-    // Tambahan route untuk archives dan restore user
-    Route::get('user-archives', [UserManagementController::class, 'archives'])->name('user-management.archives');
+    // Tambahan route untuk recycle dan restore user
+    Route::get('user-recycle', [UserManagementController::class, 'recycle'])->name('user-management.recycle');
     Route::post('user-restore/{id}', [UserManagementController::class, 'restore'])->name('user-management.restore');
     
     // Route manajemen buku
     Route::resource('books', BookController::class);
     
-    // Tambahan route untuk archives dan restore buku
-    Route::get('books-archives', [BookController::class, 'archives'])->name('books.archives');
+    // Tambahan route untuk recycle dan restore buku
+    Route::get('books-recycle', [BookController::class, 'recycle'])->name('books.recycle');
     Route::post('books-restore/{id}', [BookController::class, 'restore'])->name('books.restore');
     
     // Buat route export yang khusus dan mudah diakses

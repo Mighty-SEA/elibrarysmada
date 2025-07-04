@@ -338,12 +338,12 @@ class BookController extends Controller
     }
 
     /**
-     * Menampilkan daftar buku yang telah dihapus (diarsipkan)
+     * Menampilkan daftar buku yang telah dihapus (sampah)
      *
      * @param Request $request
      * @return \Inertia\Response
      */
-    public function archives(Request $request)
+    public function recycle(Request $request)
     {
         $perPage = 10; // Jumlah item per halaman
         $search = $request->input('search', '');
@@ -376,7 +376,7 @@ class BookController extends Controller
             return $book;
         });
         
-        return Inertia::render('BookManagement/Archives', [
+        return Inertia::render('BookManagement/Recycle', [
             'books' => $books,
             'filters' => [
                 'search' => $search
@@ -395,6 +395,6 @@ class BookController extends Controller
         $book = Buku::onlyTrashed()->findOrFail($id);
         $book->restore();
         
-        return redirect()->route('books.archives')->with('success', 'Buku berhasil dipulihkan.');
+        return redirect()->route('books.recycle')->with('success', 'Buku berhasil dipulihkan.');
     }
 } 
