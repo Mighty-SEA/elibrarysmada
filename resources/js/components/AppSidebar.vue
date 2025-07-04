@@ -32,7 +32,7 @@ const adminNavItems: NavItem[] = [
         icon: BookOpen,
     },
     {
-        title: 'Sirkulasi Layanan',
+        title: 'Peminjaman Buku',
         href: '/admin/loans',
         icon: BookMarked,
     },
@@ -42,7 +42,7 @@ const adminNavItems: NavItem[] = [
         icon: Clock,
     },
     {
-        title: 'Buku Dipinjam',
+        title: 'Sirkulasi Layanan',
         href: '/admin/loans/active',
         icon: ShoppingCart,
     },
