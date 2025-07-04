@@ -31,7 +31,12 @@ export interface User {
     name: string;
     username: string;
     avatar?: string;
+    foto_profil?: string;
     role?: string;
+    jenis_kelamin?: string;
+    jurusan?: string;
+    nomor_telepon?: string;
+    tahun_angkatan?: number;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

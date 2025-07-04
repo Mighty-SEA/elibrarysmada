@@ -16,12 +16,24 @@ const props = withDefaults(defineProps<Props>(), {
 const { getInitials } = useInitials();
 
 // Compute whether we should show the avatar image
-const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
+const showAvatar = computed(() => {
+    // Periksa foto_profil terlebih dahulu, lalu fallback ke avatar jika ada
+    return (props.user.foto_profil && props.user.foto_profil !== '') || 
+           (props.user.avatar && props.user.avatar !== '');
+});
+
+// Mendapatkan URL avatar yang sesuai
+const avatarUrl = computed(() => {
+    if (props.user.foto_profil && props.user.foto_profil !== '') {
+        return '/storage/' + props.user.foto_profil;
+    }
+    return props.user.avatar;
+});
 </script>
 
 <template>
     <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
-        <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />
+        <AvatarImage v-if="showAvatar" :src="avatarUrl" :alt="user.name" />
         <AvatarFallback class="rounded-lg text-black dark:text-white">
             {{ getInitials(user.name) }}
         </AvatarFallback>
