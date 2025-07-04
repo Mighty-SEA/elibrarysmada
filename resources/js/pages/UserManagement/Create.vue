@@ -104,7 +104,8 @@ const submit = () => {
                             </div>
                             <div class="grid gap-2">
                                 <Label for="tahun_angkatan">Tahun Angkatan</Label>
-                                <Input id="tahun_angkatan" v-model="form.tahun_angkatan" type="number" min="2000" max="2100" required class="mt-1 block w-full" />
+                                <Input id="tahun_angkatan" v-model="form.tahun_angkatan" type="number" min="0" max="2100" class="mt-1 block w-full" />
+                                <small class="text-gray-500">Gunakan 0 atau kosongkan untuk nilai "0000".</small>
                                 <InputError :message="form.errors.tahun_angkatan" class="mt-2" />
                             </div>
                         </div>

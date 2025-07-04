@@ -64,18 +64,22 @@ class UserManagementController extends Controller
             'username' => 'required|string|max:255|unique:users,username',
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => 'required|in:administrasi,guru,murid',
-            'tahun_angkatan' => 'required|numeric|digits:4',
+            'tahun_angkatan' => 'nullable|numeric',
             'jenis_kelamin' => 'nullable|string|max:20',
             'jurusan' => 'nullable|string|max:100',
             'nomor_telepon' => 'nullable|string|max:20',
             'foto_profil' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['name', 'username', 'role', 'tahun_angkatan', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
+        $data = $request->only(['name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
         $data['password'] = Hash::make($request->password);
         
+        // Gunakan "0000" jika tahun_angkatan 0 atau kosong
+        $tahunAngkatan = $request->tahun_angkatan ? (int)$request->tahun_angkatan : 0;
+        $tahunAngkatan = ($tahunAngkatan > 0) ? (string)$tahunAngkatan : "0000";
+        $data['tahun_angkatan'] = $tahunAngkatan;
+        
         // Generate ID with format: tahun_angkatan + sequential number
-        $tahunAngkatan = $request->tahun_angkatan;
         $latestUser = User::where('id', 'like', $tahunAngkatan . '%')
             ->orderBy('id', 'desc')
             ->first();
@@ -106,7 +110,7 @@ class UserManagementController extends Controller
     public function edit(User $user)
     {
         return Inertia::render('UserManagement/Edit', [
-            'user' => $user->only(['id', 'name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon', 'foto_profil'])
+            'user' => $user->only(['id', 'name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon', 'foto_profil', 'tahun_angkatan'])
         ]);
     }
 
@@ -123,19 +127,23 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'role' => 'required|in:administrasi,guru,murid',
-            'tahun_angkatan' => 'required|numeric|digits:4',
+            'tahun_angkatan' => 'nullable|numeric',
             'jenis_kelamin' => 'nullable|string|max:20',
             'jurusan' => 'nullable|string|max:100',
             'nomor_telepon' => 'nullable|string|max:20',
             'foto_profil' => 'nullable|image|max:2048',
         ]);
         
-        $data = $request->only(['name', 'username', 'role', 'tahun_angkatan', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
+        $data = $request->only(['name', 'username', 'role', 'jenis_kelamin', 'jurusan', 'nomor_telepon']);
+        
+        // Gunakan "0000" jika tahun_angkatan 0 atau kosong
+        $tahunAngkatan = $request->tahun_angkatan ? (int)$request->tahun_angkatan : 0;
+        $tahunAngkatan = ($tahunAngkatan > 0) ? (string)$tahunAngkatan : "0000";
+        $data['tahun_angkatan'] = $tahunAngkatan;
         
         // Check if tahun_angkatan has changed
-        if ($user->tahun_angkatan != $request->tahun_angkatan) {
+        if ($user->tahun_angkatan != $tahunAngkatan) {
             // Generate new ID with new tahun_angkatan
-            $tahunAngkatan = $request->tahun_angkatan;
             $latestUser = User::where('id', 'like', $tahunAngkatan . '%')
                 ->where('id', '!=', $user->id)
                 ->orderBy('id', 'desc')
@@ -166,12 +174,14 @@ class UserManagementController extends Controller
                 $data['foto_profil'] = $user->foto_profil;
             }
             
-            // Create new user with new ID
-            $newUser = User::create($data);
-            
-            // Delete old user
+            // Simpan ID lama
             $oldId = $user->id;
+            
+            // Hapus user lama terlebih dahulu untuk menghindari konflik unique constraint
             $user->delete();
+            
+            // Buat user baru dengan ID baru
+            $newUser = User::create($data);
             
             return to_route('user-management.index')->with('message', 'User berhasil diperbarui dengan ID baru');
         } else {
