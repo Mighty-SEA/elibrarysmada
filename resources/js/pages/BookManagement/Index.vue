@@ -119,7 +119,7 @@
             :disabled="isBulkProcessing"
           >
             <Trash2 class="h-4 w-4 mr-1" />
-            Hapus
+            Archives
           </Button>
           
           <!-- Batalkan Pilihan -->
@@ -239,16 +239,16 @@
   <Dialog v-model:open="confirmBulkDelete">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Konfirmasi Hapus</DialogTitle>
+        <DialogTitle>Konfirmasi Archives</DialogTitle>
         <DialogDescription>
-          Anda yakin ingin menghapus {{ selectedBooks.length }} buku yang dipilih? Tindakan ini tidak dapat dibatalkan.
+          Anda yakin ingin mengarsipkan {{ selectedBooks.length }} buku yang dipilih? Tindakan ini tidak dapat dibatalkan.
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
         <Button variant="destructive" @click="bulkDelete" :disabled="isBulkProcessing">
           <LoaderCircle v-if="isBulkProcessing" class="mr-2 h-4 w-4 animate-spin" />
           <Trash2 v-else class="mr-2 h-4 w-4" />
-          Hapus
+          Archives
         </Button>
         <Button variant="outline" @click="confirmBulkDelete = false" :disabled="isBulkProcessing">Batal</Button>
       </DialogFooter>
@@ -337,7 +337,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const deleteBook = (id: number) => {
-  if (confirm('Yakin ingin menghapus buku ini?')) {
+  if (confirm('Yakin ingin mengarsipkan buku ini?')) {
     router.delete(route('books.destroy', id));
   }
 };

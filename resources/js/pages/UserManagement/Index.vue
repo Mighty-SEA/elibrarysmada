@@ -82,7 +82,7 @@ const roleLabels = computed(() => {
 });
 
 const deleteUser = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
+    if (confirm('Apakah Anda yakin ingin mengarsipkan user ini?')) {
         router.delete(route('user-management.destroy', id));
     }
 };
