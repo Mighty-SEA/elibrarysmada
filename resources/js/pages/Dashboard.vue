@@ -287,7 +287,7 @@ function exportPDF() {
                         >
                             <div class="flex items-center gap-2">
                                 <BookOpen class="h-5 w-5 text-blue-500" />
-                                <h3 class="font-medium text-gray-900">Buku Dipinjam</h3>
+                                <h3 class="font-medium text-gray-900">Sirkulasi Layanan</h3>
                             </div>
                             <p class="text-sm text-gray-600">Buku yang sedang dipinjam</p>
                         </Link>
