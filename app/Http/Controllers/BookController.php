@@ -231,7 +231,6 @@ class BookController extends Controller
 
     public function home(Request $request)
     {
-        $perPage = 20; // Jumlah buku per halaman
         $query = $request->query('search', '');
         $categories = $request->query('categories', '');
         
@@ -258,10 +257,12 @@ class BookController extends Controller
             });
         }
         
-        $books = $booksQuery->paginate($perPage)->withQueryString();
+        // Ambil semua data buku tanpa pagination (frontend akan handle pagination)
+        $books = $booksQuery->get();
         
         // Proses data buku untuk frontend
-        foreach ($books as $book) {
+        $books = $books->map(function($book) {
+            // Handle cover image
             if ($book->cover_type === 'url') {
                 $book->cover_url = $book->cover;
             } else if ($book->cover) {
@@ -269,9 +270,15 @@ class BookController extends Controller
             } else {
                 $book->cover_url = null;
             }
+            
+            // Ensure required fields are not null
+            $book->penulis = $book->penulis ?? '';
+            $book->kategori = $book->kategori ?? '';
+            
             // Kategori bisa lebih dari satu, dipisah koma
             $book->kategori_list = $book->kategori ? array_map('trim', explode(',', $book->kategori)) : [];
-        }
+            return $book;
+        });
         
         // Ambil semua kategori unik untuk filter sidebar
         $allCategories = DB::table('books')
@@ -286,7 +293,7 @@ class BookController extends Controller
                             ->toArray();
         
         return Inertia::render('Home', [
-            'books' => $books,
+            'books' => $books->toArray(), // Konversi ke array untuk frontend
             'searchQuery' => $query,
             'selectedCategories' => $categories ? explode(',', $categories) : [],
             'allCategories' => $allCategories

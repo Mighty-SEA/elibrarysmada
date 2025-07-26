@@ -16,12 +16,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->enum('role', ['administrasi', 'guru', 'murid'])->default('murid');
+            $table->year('tahun_angkatan')->nullable();
             $table->string('jenis_kelamin')->nullable();
             $table->string('jurusan')->nullable();
             $table->string('nomor_telepon')->nullable();
             $table->string('foto_profil')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
         });
